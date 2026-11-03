@@ -33,6 +33,7 @@ public function store(Request $request)
 
     return redirect()->route('login')->with('success', 'Cuenta creada correctamente');
 }
+/*
 public function login(Request $request)
 {
     $credentials = $request->validate([
@@ -50,3 +51,4 @@ public function login(Request $request)
 
     return redirect()->intended('/');
 }
+*/
