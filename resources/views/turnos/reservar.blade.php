@@ -6,7 +6,7 @@
 
 <h1>Reservar un turno</h1>
 
-<form action=" " method="POST">
+<form action="{{ route('reserva.store') }}" method="POST">
     @csrf
 
     @if ($errors->any())
