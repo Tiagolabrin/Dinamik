@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use RoundlyConsulting\Appointments\Models\Appointment;
 
+Route::view('/','inicio')->name('inicio');
+
 Route::get('/agenda', function () {
 $appointments = Appointment::query()
     ->whereBetween('starts_at', [

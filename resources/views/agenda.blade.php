@@ -1,4 +1,4 @@
-@php
+-- @php
     $month = now()->startOfMonth();
     $daysInMonth = $month->daysInMonth;
     $offset = $month->dayOfWeek; // La semana empieza en domingo
