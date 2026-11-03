@@ -3,20 +3,25 @@
 @section('title', 'Mis turnos')
 
 @section('content')
-
 <h1>Mis turnos</h1>
+
+@if (session('success'))
+    <p role="status">{{ session('success') }}</p>
+@endif
 
 @forelse ($appointments as $appointment)
     <article>
         <h2>{{ $appointment->name }}</h2>
         <p>
-            {{ $appointment->starts_at->format('d/m/Y H:i') }}
-            @if ($appointment->ends_at) - {{ $appointment->ends_at->format('H:i') }}
+            {{ $appointment->starts_at->setTimezone(config('app.timezone'))->format('d/m/Y H:i') }}
+            @if ($appointment->ends_at)
+                - {{ $appointment->ends_at->setTimezone(config('app.timezone'))->format('H:i') }}
             @endif
         </p>
+        <p>Estado: {{ $appointment->status->value }}</p>
     </article>
 @empty
-    <p>No hay turnos reservados.</p>
+    <p>No tenés turnos reservados.</p>
 @endforelse
 
 <nav>
