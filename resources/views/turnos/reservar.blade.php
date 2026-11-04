@@ -3,16 +3,18 @@
 @section('title', 'Reservá tu turno')
 
 @section('content')
-
 <h1>Reservar un turno</h1>
 
-<form action=" " method="POST">
+@if (session('error'))
+    <p role="alert">{{ session('error') }}</p>
+@endif
+
+<form action="{{ route('reserva.store') }}" method="POST">
     @csrf
 
     @if ($errors->any())
         <div role="alert">
             <p>Revisá estos datos:</p>
-
             <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -24,17 +26,12 @@
     <label for="odontologo">Selecciona un odontólogo</label>
     <select name="odontologo_id" id="odontologo" required>
         <option value="">Selecciona un odontólogo</option>
-
         @foreach ($odontologos as $odontologo)
             <option value="{{ $odontologo->id }}" @selected(old('odontologo_id') == $odontologo->id)>
                 {{ $odontologo->user->name }} {{ $odontologo->user->apellido }}
             </option>
         @endforeach
     </select>
-
-    @error('odontologo_id')
-        <p role="alert">{{ $message }}</p>
-    @enderror
 
     <label for="fecha">Elegí la fecha</label>
     <input
@@ -74,19 +71,10 @@
     <select name="horario" id="horario" required disabled>
         <option value="">Elegí odontólogo y fecha</option>
     </select>
-
     <p id="mensaje-horarios" role="status" aria-live="polite"></p>
 
-    @error('horario')
-        <p role="alert">{{ $message }}</p>
-    @enderror
-
     <label for="observaciones">Observaciones</label>
-    <textarea id="observaciones" name="observaciones" placeholder="(Opcional)">{{ old('observaciones') }}</textarea>
-
-    @error('observaciones')
-        <p role="alert">{{ $message }}</p>
-    @enderror
+    <textarea id="observaciones" name="observaciones" maxlength="1000" placeholder="(Opcional)">{{ old('observaciones') }}</textarea>
 
     <button type="submit">Confirmar reserva</button>
 </form>
@@ -193,6 +181,7 @@
     const selectHorario = document.getElementById('horario');
     const mensajeHorarios = document.getElementById('mensaje-horarios');
     const urlHorarios = @json(route('reserva.horarios'));
+    let solicitudHorarios = 0;
 
     const tituloMes = document.getElementById('mes-calendario');
     const diasCalendario = document.getElementById('dias-calendario');
@@ -277,6 +266,7 @@
     renderizarCalendario();
 
     async function cargarHorarios() {
+        const solicitudActual = ++solicitudHorarios;
         selectHorario.disabled = true;
         mensajeHorarios.textContent = '';
 
@@ -301,8 +291,9 @@
             }
 
             const datos = await respuesta.json();
-            selectHorario.replaceChildren(new Option('Seleccioná un horario', ''));
+            if (solicitudActual !== solicitudHorarios) return;
 
+            selectHorario.replaceChildren(new Option('Seleccioná un horario', ''));
             for (const hora of datos.horarios) {
                 selectHorario.add(new Option(hora, hora));
             }
@@ -314,6 +305,7 @@
 
             selectHorario.disabled = false;
         } catch (error) {
+            if (solicitudActual !== solicitudHorarios) return;
             selectHorario.replaceChildren(new Option('Error al cargar horarios', ''));
             mensajeHorarios.textContent = 'No se pudieron cargar los horarios. Probá de nuevo.';
         }
@@ -326,5 +318,4 @@
         cargarHorarios();
     }
 </script>
-
 @endsection
