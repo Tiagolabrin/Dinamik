@@ -26,8 +26,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::view('/registro', 'registro')->name('registro');
 
-Route::post('/registro', [RegistroController::class, 'create'])
-    ->name('registro.registro');
+Route::post('/registro', [RegistroController::class, 'store'])
+    ->name('registro.store');
 
 Route::get('/perfil', function () {
     /* $user = Auth::user()
