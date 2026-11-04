@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RegistroController;
+use App\Models\Consultorio;
 use App\Models\Odontologo;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -12,39 +14,56 @@ use Illuminate\Validation\ValidationException;
 use RoundlyConsulting\Appointments\Enums\ParticipantRole;
 use RoundlyConsulting\Appointments\Facades\Appointments;
 use RoundlyConsulting\Appointments\Models\Appointment;
+use App\Http\Controllers\Admin\OdontologoController;
 
-Route::view('/', 'inicio')->name('inicio');
+Route::get('/', function () {
+    $consultorio = Consultorio::first();
 
+    return view('inicio', compact('consultorio'));
+})->name('inicio');
 Route::view('/login', 'login')->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::view('/registro', 'registro')->name('registro');
 
+Route::post('/registro', [RegistroController::class, 'create'])
+    ->name('registro.registro');
+
 Route::get('/perfil', function () {
-    $user = Auth::user()
+    /* $user = Auth::user()
         ?? User::with([
             'paciente',
             'odontologo.disponibilidades',
             'odontologo.vacaciones',
         ])->first();
-
-    abort_if(! $user, 404);
+    abort_if(! $user, 404); 
+    */
+    $user = User::with([
+        'paciente',
+        'odontologo.disponibilidades',
+        'odontologo.vacaciones',
+    ])->findOrFail(Auth::id());
 
     return view('perfil', compact('user'));
-})->name('perfil');
+})->middleware('auth')->name('perfil');
 
 Route::get('/perfil/editar', function () {
-    $user = Auth::user()
+    /*$user = Auth::user()
         ?? User::with([
             'paciente',
             'odontologo.disponibilidades',
             'odontologo.vacaciones',
         ])->first();
 
-    abort_if(! $user, 404);
+    abort_if(! $user, 404);*/
+    $user = User::with([
+        'paciente',
+        'odontologo.disponibilidades',
+        'odontologo.vacaciones',
+    ])->findOrFail(Auth::id());
 
     return view('perfil_editar', compact('user'));
-})->name('perfil_editar');
+})->middleware('auth')->name('perfil_editar');
 
 Route::get('/reserva', function () {
     $odontologos = Odontologo::with('user')->get();
@@ -218,30 +237,63 @@ Route::get('/reserva/horarios', function (Request $request) {
 })->name('reserva.horarios');
 
 Route::get('/mis-turnos', function () {
+    /*$appointments = Appointment::query()
+        ->orderBy('starts_at')
+        ->get();*/
+
+    $usuario = User::findOrFail(Auth::id());
+
     $appointments = Appointment::query()
+        ->whereHas('participants', function ($query) use ($usuario) {
+            $query->where('participant_type', $usuario->getMorphClass())
+                ->where('participant_id', $usuario->getKey())
+                ->where('role', ParticipantRole::Attendee->value);
+        })
         ->orderBy('starts_at')
         ->get();
 
     return view('turnos.mis_turnos', compact('appointments'));
-})->name('mis_turnos');
+})->middleware('auth')->name('mis_turnos');
 
-Route::get('/agenda', function () {
+Route::get('/ejemplo', function () {
     $appointments = Appointment::query()
         ->whereBetween('starts_at', [now()->startOfMonth(), now()->endOfMonth()])
         ->orderBy('starts_at')
         ->get();
 
-    return view('agenda', compact('appointments'));
-})->name('agenda');
+    return view('ejemplo', compact('appointments'));
+})->name('ejemplo');
 
 Route::get('/odontologo/agenda', function () {
-    $appointments = Appointment::query()->orderBy('starts_at')->get();
+    $usuario = Auth::user();
+    $odontologo = $usuario->odontologo;
+
+    abort_if($usuario->tipo_usuario !== 'odontologo' || ! $odontologo, 403);
+
+    $appointments = Appointment::query()
+        ->whereHas('participants', function ($query) use ($odontologo) {
+            $query->where('participant_type', $odontologo->getMorphClass())
+                ->where('participant_id', $odontologo->getKey())
+                ->where('role', ParticipantRole::Organiser->value);
+        })
+        ->orderBy('starts_at')
+        ->get();
 
     return view('odontologo.agenda', compact('appointments'));
-})->name('odontologo.agenda');
+})->middleware('auth')->name('odontologo.agenda');
 
 Route::get('/turno/confirmado/{appointment}', function (Appointment $appointment) {
     $consultorio = \App\Models\Consultorio::first();
 
     return view('turnos.confirmacion', compact('appointment', 'consultorio'));
 })->name('turno.confirmado');
+
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/odontologos/crear', [OdontologoController::class, 'create'])
+            ->name('odontologos.registro');
+        Route::post('/odontologos', [OdontologoController::class, 'store'])
+            ->name('odontologos.store');
+    });

@@ -15,6 +15,12 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'admin_initial' => [
+        'name' => env('ADMIN_INITIAL_NAME'),
+        'email' => env('ADMIN_INITIAL_EMAIL'),
+        'password' => env('ADMIN_INITIAL_PASSWORD'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

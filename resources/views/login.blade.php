@@ -5,6 +5,9 @@
 @section('content')
     <h1>Iniciar sesión</h1>
 
+    @if (session('success'))
+        <p role="status">{{ session('success') }}</p>
+    @endif
     @if (session('error'))
         <p role="alert">{{ session('error') }}</p>
     @endif

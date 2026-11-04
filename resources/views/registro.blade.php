@@ -5,7 +5,7 @@
 @section('content')
     <h2>Crear cuenta de paciente</h2>
 
-    <form action="" method="POST">
+    <form action="{{ route('registro.store') }}" method="POST">
         @csrf 
 
         @if ($errors->any())
