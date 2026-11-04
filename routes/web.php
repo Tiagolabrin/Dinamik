@@ -283,7 +283,7 @@ Route::get('/odontologo/agenda', function () {
 })->middleware('auth')->name('odontologo.agenda');
 
 Route::get('/turno/confirmado/{appointment}', function (Appointment $appointment) {
-    $consultorio = \App\Models\Consultorio::first();
+    $consultorio = Consultorio::first();
 
     return view('turnos.confirmacion', compact('appointment', 'consultorio'));
 })->name('turno.confirmado');
