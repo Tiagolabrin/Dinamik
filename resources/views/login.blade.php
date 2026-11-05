@@ -3,22 +3,26 @@
 @section('title', 'Iniciar sesión')
 
 @section('content')
-    <h1>Iniciar sesión</h1>
+    <div class="container mt-5" style="max-width: 450px;">
 
-    @if (session('success'))
-        <p role="status">{{ session('success') }}</p>
-    @endif
-    @if (session('error'))
-        <p role="alert">{{ session('error') }}</p>
-    @endif
+        <h2 class="text-center mb-4">Iniciar sesión</h2>
 
-    <form action="{{ route('login.submit') }}" method="POST">
-        @csrf
+        @if (session('success'))
+            <div class="alert alert-success rounded-0">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger rounded-0">
+                {{ session('error') }}
+            </div>
+        @endif
 
         @if ($errors->any())
-            <div role="alert">
+            <div class="alert alert-danger rounded-0">
                 <p>Revisá estos datos:</p>
-                <ul>
+                <ul class="mb-0">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -26,31 +30,45 @@
             </div>
         @endif
 
-        <label for="email">Email</label>
-        <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            autocomplete="email"
-            placeholder="correo@ejemplo.com"
-            value="{{ old('email') }}"
-        >
+        <form action="{{ route('login.submit') }}" method="POST">
+            @csrf
 
-        <label for="password">Contraseña</label>
-        <input
-            type="password"
-            name="password"
-            id="password"
-            required
-            autocomplete="current-password"
-        >
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                    type="email"
+                    class="form-control rounded-0"
+                    id="email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    placeholder="correo@ejemplo.com"
+                    value="{{ old('email') }}"
+                >
+            </div>
 
-        <button type="submit">Ingresar</button>
-    </form>
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <input
+                    type="password"
+                    class="form-control rounded-0"
+                    name="password"
+                    id="password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
 
-    <nav>
-        <a href="{{ route('registro') }}">Registrar</a>
-        <a href="{{ route('inicio') }}">Inicio</a>
-    </nav>
+            <button type="submit" class="btn btn-primary rounded-0 w-100">
+                Ingresar
+            </button>
+        </form>
+
+        <nav class="text-center mt-3">
+            <a href="{{ route('registro') }}">Crear una cuenta</a>
+            <span class="mx-2">|</span>
+            <a href="{{ route('inicio') }}">Inicio</a>
+        </nav>
+
+    </div>
 @endsection

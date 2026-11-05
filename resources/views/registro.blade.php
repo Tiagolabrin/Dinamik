@@ -1,17 +1,16 @@
 @extends('layouts.app')
 
-@section('title','Registrar paciente')
+@section('title', 'Registrar paciente')
 
 @section('content')
-    <h2>Crear cuenta de paciente</h2>
+    <div class="container mt-5" style="max-width: 750px;">
 
-    <form action="{{ route('registro.store') }}" method="POST">
-        @csrf 
+        <h2 class="text-center mb-4">Crear cuenta de paciente</h2>
 
         @if ($errors->any())
-            <div role="alert">
+            <div class="alert alert-danger rounded-0">
                 <p>Revisá estos datos:</p>
-                <ul>
+                <ul class="mb-0">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -19,63 +18,119 @@
             </div>
         @endif
 
-        <label for="name">Nombre</label>
-        <input type="text" id="name" name="name" required placeholder="Nombre" value="{{ old('name') }}">
-        
-        @error('name')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+        <form action="{{ route('registro.registro') }}" method="POST">
+            @csrf
 
-        <label for="apellido">Apellido</label>
-        <input type="text" id="apellido" name="apellido" required placeholder="Apellido" value="{{ old('apellido') }}">
-        
-        @error('apellido')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">Nombre</label>
+                    <input
+                        type="text"
+                        class="form-control rounded-0"
+                        id="name"
+                        name="name"
+                        required
+                        placeholder="Nombre"
+                        value="{{ old('name') }}"
+                    >
+                </div>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required placeholder="correo@ejemplo.com" value="{{ old('email') }}">
-        
-        @error('email')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+                <div class="col-md-6 mb-3">
+                    <label for="apellido" class="form-label">Apellido</label>
+                    <input
+                        type="text"
+                        class="form-control rounded-0"
+                        id="apellido"
+                        name="apellido"
+                        required
+                        placeholder="Apellido"
+                        value="{{ old('apellido') }}"
+                    >
+                </div>
 
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password" required >
-        
-        @error('password')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input
+                        type="email"
+                        class="form-control rounded-0"
+                        id="email"
+                        name="email"
+                        required
+                        placeholder="correo@ejemplo.com"
+                        value="{{ old('email') }}"
+                    >
+                </div>
 
-        <label for="password_confirmation">Confirmar contraseña</label>
-        <input type="password" id="password_confirmation" name="password_confirmation" required>
-        
-        @error('password_confirmation')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+                <div class="col-md-6 mb-3">
+                    <label for="obra_social" class="form-label">Obra social</label>
+                    <input
+                        type="text"
+                        class="form-control rounded-0"
+                        id="obra_social"
+                        name="obra_social"
+                        required
+                        placeholder="ISSN"
+                        value="{{ old('obra_social') }}"
+                    >
+                </div>
 
-        <label for="obra_social">Obra social</label>
-        <input type="text" id="obra_social" name="obra_social" required placeholder="ISSN" value="{{ old('obra_social') }}">
-        
-        @error('obra_social')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+                <div class="col-md-6 mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input
+                        type="password"
+                        class="form-control rounded-0"
+                        id="password"
+                        name="password"
+                        required
+                    >
+                </div>
 
-        <label for="fecha_nacimiento">Fecha de nacimiento</label>
-        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required value="{{ old('fecha_nacimiento') }}">
-            
-        @error('fecha_nacimiento')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+                <div class="col-md-6 mb-3">
+                    <label for="password_confirmation" class="form-label">Confirmar contraseña</label>
+                    <input
+                        type="password"
+                        class="form-control rounded-0"
+                        id="password_confirmation"
+                        name="password_confirmation"
+                        required
+                    >
+                </div>
 
-        <label for="direccion">Dirección</label>
-        <input type="text" id="direccion" name="direccion" required value="{{ old('direccion') }}">
-        
-        @error('direccion')
-            <p role="alert">{{ $message }}</p>
-        @enderror
+                <div class="col-md-6 mb-3">
+                    <label for="fecha_nacimiento" class="form-label">Fecha de nacimiento</label>
+                    <input
+                        type="date"
+                        class="form-control rounded-0"
+                        id="fecha_nacimiento"
+                        name="fecha_nacimiento"
+                        required
+                        value="{{ old('fecha_nacimiento') }}"
+                    >
+                </div>
 
-        <button type="submit">Registrar</button>
-    </form>
+                <div class="col-md-6 mb-3">
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <input
+                        type="text"
+                        class="form-control rounded-0"
+                        id="direccion"
+                        name="direccion"
+                        required
+                        value="{{ old('direccion') }}"
+                    >
+                </div>
+            </div>
 
+            <button type="submit" class="btn btn-primary rounded-0 w-100 mt-2">
+                Registrar
+            </button>
+        </form>
+
+        <nav class="text-center mt-3">
+            <a href="{{ route('login') }}">Iniciar sesión</a>
+            <span class="mx-2">|</span>
+            <a href="{{ route('inicio') }}">Inicio</a>
+        </nav>
+
+    </div>
 @endsection
