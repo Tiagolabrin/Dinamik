@@ -1,4 +1,3 @@
-```blade
 @extends('layouts.app')
 
 @section('title', 'Agenda')
@@ -54,7 +53,8 @@
 
         @endforelse
 
+        <a href="{{ route('inicio') }}" class="btn btn-outline-secondary mt-3">Volver al inicio</a>
+
     </div>
 
 @endsection
-```
