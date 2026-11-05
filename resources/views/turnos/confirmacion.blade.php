@@ -1,65 +1,95 @@
+```blade
 @extends('layouts.app')
 
-@section('title','Turno confirmado')
+@section('title', 'Turno confirmado')
 
 @section('content')
-    <h1>¡Tu turno está confirmado!</h1>
 
-    <dl>
-        <div>
-            <dt>Consulta</dt>
-            <dd>{{ $appointment->name }}</dd>
-        </div>
+    <div class="container py-4">
 
-        <div>
-            <dt>Fecha</dt>
-            <dd>
-                {{ $appointment->starts_at->format('d/m/Y') }}
-            </dd>
-        </div>
+        <div class="border p-4 mb-4">
 
-        <div>
-            <dt>Horario</dt>
-            <dd>
-                {{ $appointment->starts_at->format('H:i') }}
-                @if ($appointment->ends_at) - {{ $appointment->ends_at->format('H:i') }}
+            <h1 class="mb-3">¡Tu turno está confirmado!</h1>
+
+            <p class="mb-4">Estos son los datos de tu turno:</p>
+
+            <dl class="row mb-0">
+
+                <dt class="col-sm-3">Consulta</dt>
+                <dd class="col-sm-9">{{ $appointment->name }}</dd>
+
+                <dt class="col-sm-3">Fecha</dt>
+                <dd class="col-sm-9">
+                    {{ $appointment->starts_at->format('d/m/Y') }}
+                </dd>
+
+                <dt class="col-sm-3">Horario</dt>
+                <dd class="col-sm-9">
+                    {{ $appointment->starts_at->format('H:i') }}
+                    @if ($appointment->ends_at)
+                        - {{ $appointment->ends_at->format('H:i') }}
+                    @endif
+                </dd>
+
+                @if ($appointment->observaciones)
+                    <dt class="col-sm-3">Observaciones</dt>
+                    <dd class="col-sm-9">{{ $appointment->observaciones }}</dd>
                 @endif
-            </dd>
+
+            </dl>
+
         </div>
 
-        @if ($appointment->observaciones)
-            <div>
-                <dt><strong>Observaciones:</strong></dt>
-                <dd>{{ $appointment->observaciones }}</dd>
+        @if ($consultorio)
+
+            <section class="border p-4 mb-4">
+
+                <h2 class="h4 mb-3">Datos del consultorio</h2>
+
+                <dl class="row mb-0">
+
+                    <dt class="col-sm-3">Dirección</dt>
+                    <dd class="col-sm-9">{{ $consultorio->direccion }}</dd>
+
+                    <dt class="col-sm-3">Teléfono</dt>
+                    <dd class="col-sm-9">
+                        <a href="tel:{{ $consultorio->telefono }}">
+                            {{ $consultorio->telefono }}
+                        </a>
+                    </dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">
+                        <a href="mailto:{{ $consultorio->email }}">
+                            {{ $consultorio->email }}
+                        </a>
+                    </dd>
+
+                </dl>
+
+            </section>
+
+        @else
+
+            <div class="alert alert-info mb-4">
+                Los datos del consultorio estarán disponibles próximamente.
             </div>
+
         @endif
-    </dl>
 
-    @if ($consultorio)
-        <section>
-            <h2>Datos del consultorio</h2>
-            <dl>
-                <dt>Dirección</dt>
-                <dd>{{ $consultorio->direccion }}</dd>
+        <nav class="d-flex gap-2">
 
-                <dt>Teléfono</dt>
-                <dd>
-                    <a href="tel:{{ $consultorio->telefono }}">
-                        {{ $consultorio->telefono }}
-                    </a>
-                </dd>
+            <a href="{{ url('/mis-turnos') }}" class="btn btn-primary">
+                Mis turnos
+            </a>
 
-                <dt>Email</dt>
-                <dd>
-                    <a href="mailto:{{ $consultorio->email }}">
-                        {{ $consultorio->email }}
-                    </a>
-                </dd>
-            </dl>
-        </section>
-    @endif
-    <nav>
-        <a href="{{ url('/mis-turnos') }}">Mis turnos</a>
-        <a href="{{ url('/') }}">Inicio</a>
-    </nav>
+            <a href="{{ url('/') }}" class="btn btn-outline-secondary">
+                Inicio
+            </a>
+
+        </nav>
+
+    </div>
+
 @endsection
+```

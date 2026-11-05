@@ -1,48 +1,60 @@
-
+```blade
 @extends('layouts.app')
 
 @section('title', 'Agenda')
 
 @section('content')
 
-    <h1>Mi agenda</h1>
+    <div class="container py-4">
 
-    @forelse ($appointments as $appointment)
+        <h1 class="mb-4">Mi agenda</h1>
 
-        @php
-            $participante = $appointment->participants->first(
-                fn ($participante) =>
-                    $participante->role === \RoundlyConsulting\Appointments\Enums\ParticipantRole::Attendee
-            );
+        @forelse ($appointments as $appointment)
 
-            $paciente = $participante?->participant;
-        @endphp
+            @php
+                $participante = $appointment->participants->first(
+                    fn ($participante) =>
+                        $participante->role === \RoundlyConsulting\Appointments\Enums\ParticipantRole::Attendee
+                );
 
-        <article>
-            <h2>
-                Consulta con
-                {{ $paciente?->name ?? 'Paciente no disponible' }}
-                {{ $paciente?->apellido ?? '' }}
-            </h2>
+                $paciente = $participante?->participant;
+            @endphp
 
-            <p>
-                {{ $appointment->starts_at->format('d/m/Y H:i') }}
+            <article class="border p-3 mb-3">
 
-                @if ($appointment->ends_at)
-                    - {{ $appointment->ends_at->format('H:i') }}
+                <h2 class="h5 mb-3">
+                    Consulta con
+                    {{ $paciente?->name ?? 'Paciente no disponible' }}
+                    {{ $paciente?->apellido ?? '' }}
+                </h2>
+
+                <p class="mb-2">
+                    <strong>Fecha y horario:</strong>
+                    {{ $appointment->starts_at->format('d/m/Y H:i') }}
+
+                    @if ($appointment->ends_at)
+                        - {{ $appointment->ends_at->format('H:i') }}
+                    @endif
+                </p>
+
+                @if ($appointment->description)
+                    <p class="mb-0">
+                        <strong>Observaciones:</strong>
+                        {{ $appointment->description }}
+                    </p>
                 @endif
+
+            </article>
+
+        @empty
+
+            <p class="border p-3">
+                No hay turnos para mostrar.
             </p>
 
-            @if ($appointment->description)
-                <p>
-                    <strong>Observaciones:</strong>
-                    {{ $appointment->description }}
-                </p>
-            @endif
-        </article>
+        @endforelse
 
-    @empty
-        <p>No hay turnos para mostrar.</p>
-    @endforelse
+    </div>
 
 @endsection
+```
