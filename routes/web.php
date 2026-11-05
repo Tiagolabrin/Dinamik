@@ -1,8 +1,10 @@
+
 <?php
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\RegistroController;
+use App\Http\Controllers\Admin\OdontologoController;
 use App\Models\Consultorio;
 use App\Models\Odontologo;
 use App\Models\User;
@@ -15,30 +17,28 @@ use Illuminate\Validation\ValidationException;
 use RoundlyConsulting\Appointments\Enums\ParticipantRole;
 use RoundlyConsulting\Appointments\Facades\Appointments;
 use RoundlyConsulting\Appointments\Models\Appointment;
-use App\Http\Controllers\Admin\OdontologoController;
 
 Route::get('/', function () {
     $consultorio = Consultorio::first();
 
     return view('inicio', compact('consultorio'));
 })->name('inicio');
+
 Route::view('/login', 'login')->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::view('/registro', 'registro')->name('registro');
+
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.submit');
+
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->name('logout');
+
+Route::view('/registro', 'registro')
+    ->name('registro');
 
 Route::post('/registro', [RegistroController::class, 'store'])
     ->name('registro.store');
 
 Route::get('/perfil', function () {
-    /* $user = Auth::user()
-        ?? User::with([
-            'paciente',
-            'odontologo.disponibilidades',
-            'odontologo.vacaciones',
-        ])->first();
-    abort_if(! $user, 404); 
-    */
     $user = User::with([
         'paciente',
         'odontologo.disponibilidades',
@@ -57,8 +57,10 @@ Route::get('/perfil/editar', function () {
 
     return view('perfil_editar', compact('user'));
 })->middleware('auth')->name('perfil_editar');
-Route::post('/perfil/editar', [PerfilController::class, 'update']
-    )->middleware('auth')->name('perfil.update');
+
+Route::post('/perfil/editar', [PerfilController::class, 'update'])
+    ->middleware('auth')
+    ->name('perfil.update');
 
 Route::get('/reserva', function () {
     $odontologos = Odontologo::with('user')->get();
@@ -67,11 +69,11 @@ Route::get('/reserva', function () {
 })->name('reserva');
 
 Route::post('/reserva', function (Request $request) {
-    $usuario = Auth::user();
-
-    if (! $usuario) {
+    if (! Auth::check()) {
         return redirect()->route('login')->with('error', 'Iniciá sesión para reservar un turno.');
     }
+
+    $usuario = User::findOrFail(Auth::id());
 
     $data = $request->validate([
         'odontologo_id' => ['required', 'integer', 'exists:odontologos,id'],
@@ -81,8 +83,11 @@ Route::post('/reserva', function (Request $request) {
     ]);
 
     $odontologo = Odontologo::with('user')->findOrFail($data['odontologo_id']);
+
     $timezone = config('appointments.timezone') ?: config('app.timezone', 'UTC');
+
     $fecha = CarbonImmutable::parse($data['fecha'], $timezone);
+
     $diaSemana = [
         1 => 'lunes',
         2 => 'martes',
@@ -92,8 +97,14 @@ Route::post('/reserva', function (Request $request) {
         6 => 'sabado',
         7 => 'domingo',
     ][$fecha->dayOfWeekIso];
+
     $duracion = max(1, (int) config('appointments.default_duration_minutes', 60));
-    $inicio = CarbonImmutable::parse($fecha->toDateString().' '.$data['horario'], $timezone);
+
+    $inicio = CarbonImmutable::parse(
+        $fecha->toDateString() . ' ' . $data['horario'],
+        $timezone
+    );
+
     $fin = $inicio->addMinutes($duracion);
 
     $hayVacaciones = $odontologo->vacaciones()
@@ -111,8 +122,15 @@ Route::post('/reserva', function (Request $request) {
         ->where('dia_semana', $diaSemana)
         ->get()
         ->contains(function ($disponibilidad) use ($fecha, $inicio, $fin, $timezone) {
-            $desde = CarbonImmutable::parse($fecha->toDateString().' '.$disponibilidad->hora_inicio, $timezone);
-            $hasta = CarbonImmutable::parse($fecha->toDateString().' '.$disponibilidad->hora_fin, $timezone);
+            $desde = CarbonImmutable::parse(
+                $fecha->toDateString() . ' ' . $disponibilidad->hora_inicio,
+                $timezone
+            );
+
+            $hasta = CarbonImmutable::parse(
+                $fecha->toDateString() . ' ' . $disponibilidad->hora_fin,
+                $timezone
+            );
 
             return $inicio >= $desde && $fin <= $hasta;
         });
@@ -125,6 +143,7 @@ Route::post('/reserva', function (Request $request) {
 
     $inicioUtc = $inicio->setTimezone('UTC');
     $finUtc = $fin->setTimezone('UTC');
+
     $ocupado = Appointment::query()
         ->whereHas('participants', function ($query) use ($odontologo) {
             $query->where('participant_type', $odontologo->getMorphClass())
@@ -141,9 +160,16 @@ Route::post('/reserva', function (Request $request) {
         ]);
     }
 
-    $appointment = DB::transaction(function () use ($data, $odontologo, $usuario, $inicio, $timezone, $duracion) {
+    $appointment = DB::transaction(function () use (
+        $data,
+        $odontologo,
+        $usuario,
+        $inicio,
+        $timezone,
+        $duracion
+    ) {
         $appointment = Appointments::schedule(
-            'Consulta con '.$odontologo->user->name.' '.$odontologo->user->apellido
+            'Consulta con ' . $odontologo->user->name . ' ' . $odontologo->user->apellido
         )
             ->startingAt($inicio->format('Y-m-d H:i'), timezone: $timezone)
             ->lasting($duracion)
@@ -153,7 +179,9 @@ Route::post('/reserva', function (Request $request) {
             ->create();
 
         if (! empty($data['observaciones'])) {
-            $appointment->update(['description' => $data['observaciones']]);
+            $appointment->update([
+                'description' => $data['observaciones'],
+            ]);
         }
 
         return $appointment;
@@ -169,10 +197,15 @@ Route::get('/reserva/horarios', function (Request $request) {
         'fecha' => ['required', 'date', 'after_or_equal:today'],
     ]);
 
-    $odontologo = Odontologo::with(['disponibilidades', 'vacaciones'])
-        ->findOrFail($data['odontologo_id']);
+    $odontologo = Odontologo::with([
+        'disponibilidades',
+        'vacaciones',
+    ])->findOrFail($data['odontologo_id']);
+
     $timezone = config('appointments.timezone') ?: config('app.timezone', 'UTC');
+
     $fecha = CarbonImmutable::parse($data['fecha'], $timezone);
+
     $diaSemana = [
         1 => 'lunes',
         2 => 'martes',
@@ -193,8 +226,10 @@ Route::get('/reserva/horarios', function (Request $request) {
     }
 
     $duracion = max(1, (int) config('appointments.default_duration_minutes', 60));
+
     $inicioDiaUtc = $fecha->startOfDay()->setTimezone('UTC');
     $finDiaUtc = $fecha->addDay()->startOfDay()->setTimezone('UTC');
+
     $turnos = Appointment::query()
         ->whereHas('participants', function ($query) use ($odontologo) {
             $query->where('participant_type', $odontologo->getMorphClass())
@@ -208,10 +243,21 @@ Route::get('/reserva/horarios', function (Request $request) {
     $horarios = [];
 
     foreach ($odontologo->disponibilidades->where('dia_semana', $diaSemana) as $disponibilidad) {
-        $desde = CarbonImmutable::parse($fecha->toDateString().' '.$disponibilidad->hora_inicio, $timezone);
-        $hasta = CarbonImmutable::parse($fecha->toDateString().' '.$disponibilidad->hora_fin, $timezone);
+        $desde = CarbonImmutable::parse(
+            $fecha->toDateString() . ' ' . $disponibilidad->hora_inicio,
+            $timezone
+        );
 
-        for ($slot = $desde; $slot->addMinutes($duracion) <= $hasta; $slot = $slot->addMinutes($duracion)) {
+        $hasta = CarbonImmutable::parse(
+            $fecha->toDateString() . ' ' . $disponibilidad->hora_fin,
+            $timezone
+        );
+
+        for (
+            $slot = $desde;
+            $slot->addMinutes($duracion) <= $hasta;
+            $slot = $slot->addMinutes($duracion)
+        ) {
             $finSlot = $slot->addMinutes($duracion);
 
             if ($slot->isPast()) {
@@ -219,7 +265,8 @@ Route::get('/reserva/horarios', function (Request $request) {
             }
 
             $ocupado = $turnos->contains(
-                fn ($turno) => $turno->starts_at < $finSlot && $turno->ends_at > $slot
+                fn($turno) => $turno->starts_at < $finSlot
+                    && $turno->ends_at > $slot
             );
 
             if (! $ocupado) {
@@ -228,14 +275,12 @@ Route::get('/reserva/horarios', function (Request $request) {
         }
     }
 
-    return response()->json(['horarios' => array_values(array_unique($horarios))]);
+    return response()->json([
+        'horarios' => array_values(array_unique($horarios)),
+    ]);
 })->name('reserva.horarios');
 
 Route::get('/mis-turnos', function () {
-    /*$appointments = Appointment::query()
-        ->orderBy('starts_at')
-        ->get();*/
-
     $usuario = User::findOrFail(Auth::id());
 
     $appointments = Appointment::query()
@@ -266,6 +311,7 @@ Route::get('/odontologo/agenda', function () {
     abort_if($usuario->tipo_usuario !== 'odontologo' || ! $odontologo, 403);
 
     $appointments = Appointment::query()
+        ->with('participants.participant')
         ->whereHas('participants', function ($query) use ($odontologo) {
             $query->where('participant_type', $odontologo->getMorphClass())
                 ->where('participant_id', $odontologo->getKey())
@@ -289,6 +335,7 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
         Route::get('/odontologos/crear', [OdontologoController::class, 'create'])
             ->name('odontologos.registro');
+
         Route::post('/odontologos', [OdontologoController::class, 'store'])
             ->name('odontologos.store');
     });
