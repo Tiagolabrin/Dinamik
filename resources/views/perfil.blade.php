@@ -4,6 +4,10 @@
 
 @section('content')
     <h1>Mi perfil</h1>
+    
+    @if (session('success'))
+        <p class="alert alert-success" role="status">{{ session('success') }}</p>
+    @endif
 
     <dl>
         <div>

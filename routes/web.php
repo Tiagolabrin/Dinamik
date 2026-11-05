@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\RegistroController;
 use App\Models\Consultorio;
 use App\Models\Odontologo;
@@ -48,14 +49,6 @@ Route::get('/perfil', function () {
 })->middleware('auth')->name('perfil');
 
 Route::get('/perfil/editar', function () {
-    /*$user = Auth::user()
-        ?? User::with([
-            'paciente',
-            'odontologo.disponibilidades',
-            'odontologo.vacaciones',
-        ])->first();
-
-    abort_if(! $user, 404);*/
     $user = User::with([
         'paciente',
         'odontologo.disponibilidades',
@@ -64,6 +57,8 @@ Route::get('/perfil/editar', function () {
 
     return view('perfil_editar', compact('user'));
 })->middleware('auth')->name('perfil_editar');
+Route::post('/perfil/editar', [PerfilController::class, 'update']
+    )->middleware('auth')->name('perfil.update');
 
 Route::get('/reserva', function () {
     $odontologos = Odontologo::with('user')->get();

@@ -5,7 +5,18 @@
 @section('content')
     <h1>Editar mi perfil</h1>
 
-    <form action="" method="POST">
+    @if ($errors->any())
+        <div role="alert">
+            <p>Revisá estos datos:</p>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('perfil.update') }}" method="POST">
         @csrf
         <label for="name">Nombre</label>
         <input 
