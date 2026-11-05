@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use RoundlyConsulting\Appointments\Enums\ParticipantRole;
+use RoundlyConsulting\Appointments\Enums\Status;
 use RoundlyConsulting\Appointments\Facades\Appointments;
 use RoundlyConsulting\Appointments\Models\Appointment;
 
@@ -175,6 +176,7 @@ Route::post('/reserva', function (Request $request) {
             ->lasting($duracion)
             ->withParticipant($odontologo, ParticipantRole::Organiser)
             ->withParticipant($usuario, ParticipantRole::Attendee)
+            ->withStatus(Status::Confirmed)
             ->preventConflicts()
             ->create();
 
