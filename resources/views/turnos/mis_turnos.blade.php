@@ -18,7 +18,6 @@
                 - {{ $appointment->ends_at->setTimezone(config('app.timezone'))->format('H:i') }}
             @endif
         </p>
-        <p>Estado: {{ $appointment->status->value }}</p>
     </article>
 @empty
     <p>No tenés turnos reservados.</p>
