@@ -18,7 +18,7 @@
             </div>
         @endif
 
-        <form action="{{ route('registro.registro') }}" method="POST">
+            <form action="{{ route('registro.store') }}" method="POST"></form>
             @csrf
 
             <div class="row">
