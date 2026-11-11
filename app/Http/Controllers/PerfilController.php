@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 class PerfilController extends Controller
 {
@@ -48,49 +49,69 @@ class PerfilController extends Controller
         $data = $request->validate($rules);
 
         DB::transaction(function () use ($user, $data): void {
-        $user->name = $data['name'];
-        $user->apellido = $data['apellido'];
-        $user->email = $data['email'];
-        $user->save();
+            $user->name = $data['name'];
+            $user->apellido = $data['apellido'];
+            $user->email = $data['email'];
+            $user->save();
 
-        if ($user->paciente) {
-            $user->paciente->update([
-                'obra_social' => $data['obra_social'],
-                'fecha_nacimiento' => $data['fecha_nacimiento'],
-                'direccion' => $data['direccion'],
-            ]);
-        } elseif ($user->odontologo) {
-            $odontologo = $user->odontologo;
-            $odontologo->matricula = $data['matricula'];
-            $odontologo->save();
-
-            $odontologo->disponibilidades()->delete();
-
-            foreach ($data['disponibilidades'] as $disponibilidad) {
-                $odontologo->disponibilidades()->create([
-                    'dia_semana' => $disponibilidad['dia_semana'],
-                    'hora_inicio' => $disponibilidad['hora_inicio'],
-                    'hora_fin' => $disponibilidad['hora_fin'],
+            if ($user->paciente) {
+                $user->paciente->update([
+                    'obra_social' => $data['obra_social'],
+                    'fecha_nacimiento' => $data['fecha_nacimiento'],
+                    'direccion' => $data['direccion'],
                 ]);
-            }
+            } elseif ($user->odontologo) {
+                $odontologo = $user->odontologo;
+                $odontologo->matricula = $data['matricula'];
+                $odontologo->save();
 
-            $odontologo->vacaciones()->delete();
+                $odontologo->disponibilidades()->delete();
 
-            foreach ($data['vacaciones'] ?? [] as $vacacion) {
-                if (blank($vacacion['fecha_desde']) && blank($vacacion['fecha_hasta'])) {
-                    continue;
+                foreach ($data['disponibilidades'] as $disponibilidad) {
+                    $odontologo->disponibilidades()->create([
+                        'dia_semana' => $disponibilidad['dia_semana'],
+                        'hora_inicio' => $disponibilidad['hora_inicio'],
+                        'hora_fin' => $disponibilidad['hora_fin'],
+                    ]);
                 }
 
-                $odontologo->vacaciones()->create([
-                    'fecha_desde' => $vacacion['fecha_desde'],
-                    'fecha_hasta' => $vacacion['fecha_hasta'],
-                ]);
-            }
-        }
-    });
+                $odontologo->vacaciones()->delete();
 
-    return redirect()
-        ->route('perfil')
-        ->with('success', 'Perfil actualizado correctamente.');
+                foreach ($data['vacaciones'] ?? [] as $vacacion) {
+                    if (blank($vacacion['fecha_desde']) && blank($vacacion['fecha_hasta'])) {
+                        continue;
+                    }
+
+                    $odontologo->vacaciones()->create([
+                        'fecha_desde' => $vacacion['fecha_desde'],
+                        'fecha_hasta' => $vacacion['fecha_hasta'],
+                    ]);
+                }
+            }
+        });
+
+        return redirect()
+            ->route('perfil')
+            ->with('success', 'Perfil actualizado correctamente.');
+    }
+
+    public function show(): View{
+        $user = User::with([
+            'paciente',
+            'odontologo.disponibilidades',
+            'odontologo.vacaciones',
+        ])->findOrFail(Auth::id());
+
+        return view('perfil', compact('user'));
+    }
+
+    public function edit(): View {
+        $user = User::with([
+            'paciente',
+            'odontologo.disponibilidades',
+            'odontologo.vacaciones',
+        ])->findOrFail(Auth::id());
+
+        return view('perfil_editar', compact('user'));
     }
 }

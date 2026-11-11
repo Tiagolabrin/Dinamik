@@ -31,9 +31,9 @@
                     @endif
                 </dd>
 
-                @if ($appointment->observaciones)
+                @if ($appointment->description)
                     <dt class="col-sm-3">Observaciones</dt>
-                    <dd class="col-sm-9">{{ $appointment->observaciones }}</dd>
+                    <dd class="col-sm-9">{{ $appointment->description }}</dd>
                 @endif
 
             </dl>
