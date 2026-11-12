@@ -68,76 +68,98 @@
         </div>
     @elseif ($user->odontologo)
 
-        <label for="matricula">Matrícula</label>
-        <input type="text" id="matricula" name="matricula" value="{{ old('matricula', $user->odontologo->matricula) }}">
+         <label for="matricula" class="form-label">Matrícula</label>
+        <input type="text" class="form-control mb-4" id="matricula" name="matricula" value="{{ old('matricula', $user->odontologo->matricula) }}">
 
-        <section id="disponibilidad">
-            <h2>Horarios habituales</h2>
+        <section id="disponibilidad" class="mb-5">
+            <h5 class="card-title mb-3">Horarios habituales</h5>
 
             @forelse ($user->odontologo->disponibilidades as $indice => $disponibilidad)
-                <div class="fila-disponibilidad">
-                    <label for="dia-{{ $indice }}">Día</label>
-                    <select id="dia-{{ $indice }}" name="disponibilidades[{{ $indice }}][dia_semana]" required>
-                        <option value="">Elegí un día</option>
-                        <option value="lunes" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'lunes')>Lunes</option>
-                        <option value="martes" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'martes')>Martes</option>
-                        <option value="miercoles" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'miercoles')>Miércoles</option>
-                        <option value="jueves" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'jueves')>Jueves</option>
-                        <option value="viernes" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'viernes')>Viernes</option>
-                    </select>
+                <div class="fila-disponibilidad row g-3 align-items-end bg-light rounded-3 p-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="dia-{{ $indice }}" class="form-label">Día</label>
+                        <select class="form-select" id="dia-{{ $indice }}" name="disponibilidades[{{ $indice }}][dia_semana]" required>
+                            <option value="">Elegí un día</option>
+                            <option value="lunes" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'lunes')>Lunes</option>
+                            <option value="martes" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'martes')>Martes</option>
+                            <option value="miercoles" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'miercoles')>Miércoles</option>
+                            <option value="jueves" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'jueves')>Jueves</option>
+                            <option value="viernes" @selected(old("disponibilidades.$indice.dia_semana", $disponibilidad->dia_semana) === 'viernes')>Viernes</option>
+                        </select>
+                    </div>
 
-                    <label for="inicio-{{ $indice }}">Desde</label>
-                    <input type="time" id="inicio-{{ $indice }}" name="disponibilidades[{{ $indice }}][hora_inicio]" value="{{ old("disponibilidades.$indice.hora_inicio", substr($disponibilidad->hora_inicio, 0, 5)) }}" required>
+                    <div class="col-md-4">
+                        <label for="inicio-{{ $indice }}" class="form-label">Desde</label>
+                        <input type="time" class="form-control" id="inicio-{{ $indice }}" name="disponibilidades[{{ $indice }}][hora_inicio]" value="{{ old("disponibilidades.$indice.hora_inicio", substr($disponibilidad->hora_inicio, 0, 5)) }}" required>
+                    </div>
 
-                    <label for="fin-{{ $indice }}">Hasta</label>
-                    <input type="time" id="fin-{{ $indice }}" name="disponibilidades[{{ $indice }}][hora_fin]" value="{{ old("disponibilidades.$indice.hora_fin", substr($disponibilidad->hora_fin, 0, 5)) }}" required>
+                    <div class="col-md-4">
+                        <label for="fin-{{ $indice }}" class="form-label">Hasta</label>
+                        <input type="time" class="form-control" id="fin-{{ $indice }}" name="disponibilidades[{{ $indice }}][hora_fin]" value="{{ old("disponibilidades.$indice.hora_fin", substr($disponibilidad->hora_fin, 0, 5)) }}" required>
+                    </div>
                 </div>
             @empty
-                <div class="fila-disponibilidad">
-                    <label for="dia-0">Día</label>
-                    <select id="dia-0" name="disponibilidades[0][dia_semana]" required>
-                        <option value="">Elegí un día</option>
-                        <option value="lunes">Lunes</option>
-                        <option value="martes">Martes</option>
-                        <option value="miercoles">Miércoles</option>
-                        <option value="jueves">Jueves</option>
-                        <option value="viernes">Viernes</option>
-                    </select>
+                <div class="fila-disponibilidad row g-3 align-items-end bg-light rounded-3 p-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="dia-0" class="form-label">Día</label>
+                        <select class="form-select" id="dia-0" name="disponibilidades[0][dia_semana]" required>
+                            <option value="">Elegí un día</option>
+                            <option value="lunes">Lunes</option>
+                            <option value="martes">Martes</option>
+                            <option value="miercoles">Miércoles</option>
+                            <option value="jueves">Jueves</option>
+                            <option value="viernes">Viernes</option>
+                        </select>
+                    </div>
 
-                    <label for="inicio-0">Desde</label>
-                    <input type="time" id="inicio-0" name="disponibilidades[0][hora_inicio]" required>
+                    <div class="col-md-4">
+                        <label for="inicio-0" class="form-label">Desde</label>
+                        <input type="time" class="form-control" id="inicio-0" name="disponibilidades[0][hora_inicio]" required>
+                    </div>
 
-                    <label for="fin-0">Hasta</label>
-                    <input type="time" id="fin-0" name="disponibilidades[0][hora_fin]" required>
+                    <div class="col-md-4">
+                        <label for="fin-0" class="form-label">Hasta</label>
+                        <input type="time" class="form-control" id="fin-0" name="disponibilidades[0][hora_fin]" required>
+                    </div>
                 </div>
             @endforelse
 
-            <button type="button" id="agregar-disponibilidad">Agregar otro horario</button>
+            <button type="button" class="btn btn-outline-primary" id="agregar-disponibilidad">Agregar otro horario</button>
         </section>
 
-        <section id="vacaciones">
-            <h2>Vacaciones y días no disponibles</h2>
+        <section id="vacaciones" class="mb-4">
+            <h5 class="card-title mb-3">Vacaciones y días no disponibles</h5>
 
             @forelse ($user->odontologo->vacaciones as $indice => $vacacion)
-                <div class="fila-vacaciones">
-                    <label for="fecha-desde-{{ $indice }}">Desde</label>
-                    <input type="date" id="fecha-desde-{{ $indice }}" name="vacaciones[{{ $indice }}][fecha_desde]" value="{{ old("vacaciones.$indice.fecha_desde", $vacacion->fecha_desde) }}">
+                <div class="fila-vacaciones row g-3 align-items-end bg-light rounded-3 p-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="fecha-desde-{{ $indice }}" class="form-label">Desde</label>
+                        <input type="date" class="form-control" id="fecha-desde-{{ $indice }}" name="vacaciones[{{ $indice }}][fecha_desde]" value="{{ old("vacaciones.$indice.fecha_desde", $vacacion->fecha_desde) }}">
+                    </div>
 
-                    <label for="fecha-hasta-{{ $indice }}">Hasta</label>
-                    <input type="date" id="fecha-hasta-{{ $indice }}" name="vacaciones[{{ $indice }}][fecha_hasta]" value="{{ old("vacaciones.$indice.fecha_hasta", $vacacion->fecha_hasta) }}">
+                    <div class="col-md-6">
+                        <label for="fecha-hasta-{{ $indice }}" class="form-label">Hasta</label>
+                        <input type="date" class="form-control" id="fecha-hasta-{{ $indice }}" name="vacaciones[{{ $indice }}][fecha_hasta]" value="{{ old("vacaciones.$indice.fecha_hasta", $vacacion->fecha_hasta) }}">
+                    </div>
                 </div>
             @empty
-                <div class="fila-vacaciones">
-                    <label for="fecha-desde-0">Desde</label>
-                    <input type="date" id="fecha-desde-0" name="vacaciones[0][fecha_desde]">
+                <div class="fila-vacaciones row g-3 align-items-end bg-light rounded-3 p-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="fecha-desde-0" class="form-label">Desde</label>
+                        <input type="date" class="form-control" id="fecha-desde-0" name="vacaciones[0][fecha_desde]">
+                    </div>
 
-                    <label for="fecha-hasta-0">Hasta</label>
-                    <input type="date" id="fecha-hasta-0" name="vacaciones[0][fecha_hasta]">
+                    <div class="col-md-6">
+                        <label for="fecha-hasta-0" class="form-label">Hasta</label>
+                        <input type="date" class="form-control" id="fecha-hasta-0" name="vacaciones[0][fecha_hasta]">
+                    </div>
                 </div>
             @endforelse
-                <button type="button" id="agregar-vacaciones">Agregar otro período</button>
-            </section>
-        @endif
+
+            <button type="button" class="btn btn-outline-primary" id="agregar-vacaciones">Agregar otro período</button>
+        </section>
+    @endif
+
 <div class="w-100 text-center mb-4">
     <button type="submit" class="btn btn-primary">Guardar cambios</button>
 </div>
@@ -151,34 +173,61 @@
         <a href="{{ route('mis_turnos') }}" class="btn btn-success mt-3">Mis Turnos</a>
         <a href="{{ route('inicio') }}" class="btn btn-outline-primary mt-3">Inicio</a>
 </div>
-    <script>
+<script>
+        function agregarBotonQuitar(fila, texto) {
+            const contenedorQuitar = document.createElement('div');
+            contenedorQuitar.className = 'col-12 d-flex justify-content-end';
+
+            const botonQuitar = document.createElement('button');
+            botonQuitar.type = 'button';
+            botonQuitar.className = 'btn btn-outline-danger btn-sm';
+            botonQuitar.textContent = texto;
+            botonQuitar.addEventListener('click', () => fila.remove());
+
+            contenedorQuitar.append(botonQuitar);
+            fila.append(contenedorQuitar);
+        }
+
+        function crearPlantilla(fila) {
+            const plantilla = fila.cloneNode(true);
+            plantilla.querySelectorAll('input, select').forEach((campo) => {
+                campo.value = '';
+            });
+            plantilla.querySelectorAll('option').forEach((opcion) => {
+                opcion.removeAttribute('selected');
+            });
+            return plantilla;
+        }
+
+        function siguienteIndiceDesde(elementos) {
+            const indices = [...elementos].map((el) => Number(el.id.split('-').pop()));
+            return Math.max(-1, ...indices) + 1;
+        }
+
         const seccionDisponibilidad = document.querySelector('#disponibilidad');
         const botonAgregar = document.querySelector('#agregar-disponibilidad');
-        let siguienteIndice = seccionDisponibilidad ? 
-                                seccionDisponibilidad.querySelectorAll('.fila-disponibilidad').length
-                                : 0 ;
 
-        if (seccionDisponibilidad && botonAgregar){
-            botonAgregar.addEventListener('click', () =>{
-                const primeraFila = seccionDisponibilidad.querySelector('.fila-disponibilidad');
-                const nuevaFila = primeraFila.cloneNode(true);
+        if (seccionDisponibilidad && botonAgregar) {
+            const plantillaDisponibilidad = crearPlantilla(seccionDisponibilidad.querySelector('.fila-disponibilidad'));
+            let siguienteIndice = siguienteIndiceDesde(seccionDisponibilidad.querySelectorAll('select'));
 
-                nuevaFila.querySelectorAll('input, select').forEach( (campo) => {
-                    campo.value = "";
-                    campo.name = campo.name.replace(/\[\d+\]/,`[${siguienteIndice}]`);
+            seccionDisponibilidad.querySelectorAll('.fila-disponibilidad').forEach((fila) => {
+                agregarBotonQuitar(fila, 'Quitar horario');
+            });
+
+            botonAgregar.addEventListener('click', () => {
+                const nuevaFila = plantillaDisponibilidad.cloneNode(true);
+
+                nuevaFila.querySelectorAll('input, select').forEach((campo) => {
+                    campo.name = campo.name.replace(/\[\d+\]/, `[${siguienteIndice}]`);
                     campo.id = campo.id.replace(/-\d+$/, `-${siguienteIndice}`);
                 });
 
-                nuevaFila.querySelectorAll('label').forEach( (etiqueta) => {
+                nuevaFila.querySelectorAll('label').forEach((etiqueta) => {
                     etiqueta.htmlFor = etiqueta.htmlFor.replace(/-\d+$/, `-${siguienteIndice}`);
                 });
 
-                const botonQuitar = document.createElement('button');
-                botonQuitar.type = 'button';
-                botonQuitar.textContent = 'Quitar horario';
-                botonQuitar.addEventListener('click', () => nuevaFila.remove());
-
-                nuevaFila.append(botonQuitar);
+                agregarBotonQuitar(nuevaFila, 'Quitar horario');
                 seccionDisponibilidad.insertBefore(nuevaFila, botonAgregar);
                 siguienteIndice++;
             });
@@ -186,34 +235,34 @@
 
         const seccionVacaciones = document.querySelector('#vacaciones');
         const botonAgregarVacaciones = document.querySelector('#agregar-vacaciones');
-        let siguientePeriodo = seccionVacaciones ? 
-                                seccionVacaciones.querySelectorAll('.fila-vacaciones').length
-                                : 0 ;
 
         if (seccionVacaciones && botonAgregarVacaciones) {
-            botonAgregarVacaciones.addEventListener('click',() => {
-                const primeraFila = seccionVacaciones.querySelector('.fila-vacaciones');
-                const nuevaFila = primeraFila.cloneNode(true);
+            const plantillaVacaciones = crearPlantilla(seccionVacaciones.querySelector('.fila-vacaciones'));
+            let siguientePeriodo = siguienteIndiceDesde(seccionVacaciones.querySelectorAll('input[id^="fecha-desde-"]'));
 
-                nuevaFila.querySelectorAll('input').forEach( (campo) => {
-                    campo.value = "";
+            seccionVacaciones.querySelectorAll('.fila-vacaciones').forEach((fila) => {
+                agregarBotonQuitar(fila, 'Quitar período');
+            });
+
+            botonAgregarVacaciones.addEventListener('click', () => {
+                const nuevaFila = plantillaVacaciones.cloneNode(true);
+
+                nuevaFila.querySelectorAll('input').forEach((campo) => {
                     campo.name = campo.name.replace(/\[\d+\]/, `[${siguientePeriodo}]`);
-                    campo.id = campo.id.replace(/-\d+$/,`-${siguientePeriodo}`);
+                    campo.id = campo.id.replace(/-\d+$/, `-${siguientePeriodo}`);
                 });
 
-                nuevaFila.querySelectorAll('label').forEach( (etiqueta) => {
+                nuevaFila.querySelectorAll('label').forEach((etiqueta) => {
                     etiqueta.htmlFor = etiqueta.htmlFor.replace(/-\d+$/, `-${siguientePeriodo}`);
                 });
 
-                const botonQuitar = document.createElement('button')
-                botonQuitar.type = "button";
-                botonQuitar.textContent = "Quitar período";
-                botonQuitar.addEventListener('click', () => nuevaFila.remove());
-
-                nuevaFila.append(botonQuitar);
+                agregarBotonQuitar(nuevaFila, 'Quitar período');
                 seccionVacaciones.insertBefore(nuevaFila, botonAgregarVacaciones);
                 siguientePeriodo++;
             });
         }
     </script>
+
+
+
 @endsection
