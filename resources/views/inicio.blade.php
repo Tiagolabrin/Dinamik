@@ -114,39 +114,16 @@
 <main class="container py-4">
     <div class="row g-4">
         <section class="col-md-7">
-            <h2>Conocé nuestro consultorio</h2>
-            <p>
-                Consultorio odontológico. Odontología general. Endodoncia,
-                ortodoncia, implantes dentales y periodoncia.
-            </p>
-            <p>Atención mediante obras sociales.</p>
-
-            @if ($consultorio)
-                <dl>
-                    <dt>Dirección</dt>
-                    <dd>{{ $consultorio->direccion }}</dd>
-
-                    <dt>Teléfono</dt>
-                    <dd>
-                        <a href="tel:{{ $consultorio->telefono }}">
-                            {{ $consultorio->telefono }}
-                        </a>
-                    </dd>
-
-                    <dt>Email</dt>
-                    <dd>
-                        <a href="mailto:{{ $consultorio->email }}">
-                            {{ $consultorio->email }}
-                        </a>
-                    </dd>
-                </dl>
-            @else
-                <p>Los datos de contacto del consultorio estarán disponibles próximamente.</p>
-            @endif
+            <br>
+            <h2>Conocé nuestro consultorio</h2><br>
+            <p> Hace más de 25 años que trabajamos por la salud bucal de nuestra comunidad, a través del Círculo Odontológico de Neuquén.</p>
+            <p>Nos especializamos en odontología general y brindamos atención integral en distintas áreas, como endodoncia, ortodoncia, implantes dentales y periodoncia</p>
+            <p>Nuestro compromiso es ofrecer una atención personalizada y de calidad, acompañando a cada paciente en el cuidado de su salud bucal.</p>
+            <p>Trabajamos con obras sociales.</p>
         </section>
 
         <section class="col-md-5">
-            <div class="card">
+            <div class="card bg-white">
                 <div class="card-body">
                     <h2 class="card-title">Iniciar sesión</h2>
 
@@ -165,9 +142,10 @@
                                 type="email"
                                 id="email"
                                 name="email"
-                                class="form-control"
+                                class="form-control bg-light"
                                 value="{{ old('email') }}"
                                 autocomplete="email"
+                                placeholder="usuario@gmail.com"
                                 required
                             >
                         </div>
@@ -178,8 +156,9 @@
                                 type="password"
                                 id="password"
                                 name="password"
-                                class="form-control"
+                                class="form-control bg-light"
                                 autocomplete="current-password"
+                                placeholder="**********"
                                 required
                             >
                         </div>
