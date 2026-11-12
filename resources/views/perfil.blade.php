@@ -94,54 +94,47 @@
                 </div>
             @endif
         </div>
-    </div>
-</div>
-</div>
+
 <div class="text-center">
     <nav>
         <a href="{{ route('mis_turnos') }}" class="btn btn-success mt-3">Mis Turnos</a>
         <a href="{{ route('perfil_editar') }}" class="btn btn-primary mt-3">Editar mi perfil</a>
         <a href="{{ route('inicio') }}" class="btn btn-outline-primary mt-3">Inicio</a>
 </div>
-
-
-
-    @if ($user->odontologo)
-        <section>
-            <h2>Mi disponibilidad</h2>
+        @if ($user->odontologo)
+            <h5 class="card-title mt-5 mb-3">Mi disponibilidad</h5>
 
             @php
                 $disponibilidadesPorDia = $user->odontologo->disponibilidades->groupBy('dia_semana');
             @endphp
 
-            @forelse ($disponibilidadesPorDia as $dia =>$horarios)
-                <article>
-                    <h3>{{ $dia }}</h3>
+            @forelse ($disponibilidadesPorDia as $dia => $horarios)
+                <div class="bg-light rounded-3 p-3 mb-3">
+                    <h6 class="fw-semibold mb-2 text-capitalize">{{ $dia }}</h6>
 
                     @foreach ($horarios as $horario)
-                        <p>
-                            {{ $horario->hora_inicio }} - {{ $horario->hora_fin }}
+                        <p class="mb-1">
+                            {{ substr($horario->hora_inicio, 0, 5) }} - {{ substr($horario->hora_fin, 0, 5) }}
                         </p>
                     @endforeach
-                </article>
+                </div>
             @empty
-                <p>Todavía no cargaste tus horarios.</p>
+                <p class="text-secondary">Todavía no cargaste tus horarios.</p>
             @endforelse
-        </section>
 
-        <section>
-            <h2>Mis vacaciones</h2>
+            <h5 class="card-title mt-5 mb-3">Mis vacaciones</h5>
 
             @forelse ($user->odontologo->vacaciones as $vacacion)
-                <article>
-                    <p>
+                <div class="bg-light rounded-3 p-3 mb-3">
+                    <p class="fw-semibold mb-0">
                         {{ $vacacion->fecha_desde }} - {{ $vacacion->fecha_hasta }}
                     </p>
-                </article>
+                </div>
             @empty
-                <p>No tenes vacaciones cargadas.</p>
+                <p class="text-secondary">No tenés vacaciones cargadas.</p>
             @endforelse
-        </section>
-    @endif
-
+        @endif
+    </div>
+</div>
+</div>
 @endsection
