@@ -3,50 +3,108 @@
 @section('title','Mi perfil')
 
 @section('content')
-    <h1>Mi perfil</h1>
+
     
     @if (session('success'))
         <p class="alert alert-success" role="status">{{ session('success') }}</p>
     @endif
+<head>
+    <style>
+        .perfil-container {
+            width: min(100% - 2rem, 700px);
+            margin: 2rem auto;
+        }
+        .mio{
+            margin: 0 35rem 0 0;
+        }
+    </style>
+</head>
 
-    <dl>
-        <div>
-            <dt>Nombre</dt>
-            <dd>{{ $user->name }} {{ $user->apellido }}</dd>
+</br>
+    <div class="mio"><h1 class="h2 text-center fw-bold m5-4">Mi perfil</h1></div>
+<div class="perfil-container"><div class="card shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-4">Datos del usuario</h5>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="bg-light rounded-3 p-3 h-100">
+                    <dl class="mb-0">
+                        <dt class="small text-secondary mb-1">Nombre</dt>
+                        <dd class="fw-semibold mb-0">
+                            {{ $user->name }} {{ $user->apellido }}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="bg-light rounded-3 p-3 h-100">
+                    <dl class="mb-0">
+                        <dt class="small text-secondary mb-1">Email</dt>
+                        <dd class="fw-semibold mb-0 text-break">{{ $user->email }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="bg-light rounded-3 p-3 h-100">
+                    <dl class="mb-0">
+                        <dt class="small text-secondary mb-1">Registrado como</dt>
+                        <dd class="fw-semibold mb-0">{{ $user->tipo_usuario }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            @if ($user->paciente)
+                <div class="col-md-6">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <dl class="mb-0">
+                            <dt class="small text-secondary mb-1">Obra social</dt>
+                            <dd class="fw-semibold mb-0">{{ $user->paciente->obra_social }}</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <dl class="mb-0">
+                            <dt class="small text-secondary mb-1">Fecha de nacimiento</dt>
+                            <dd class="fw-semibold mb-0">{{ $user->paciente->fecha_nacimiento }}</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <dl class="mb-0">
+                            <dt class="small text-secondary mb-1">Dirección</dt>
+                            <dd class="fw-semibold mb-0">{{ $user->paciente->direccion }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            @elseif ($user->odontologo)
+                <div class="col-md-6">
+                    <div class="bg-light rounded-3 p-3 h-100">
+                        <dl class="mb-0">
+                            <dt class="small text-secondary mb-1">Matrícula</dt>
+                            <dd class="fw-semibold mb-0">{{ $user->odontologo->matricula }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            @endif
         </div>
+    </div>
+</div>
+</div>
+<div class="text-center">
+    <nav>
+        <a href="{{ route('mis_turnos') }}" class="btn btn-success mt-3">Mis Turnos</a>
+        <a href="{{ route('perfil_editar') }}" class="btn btn-primary mt-3">Editar mi perfil</a>
+        <a href="{{ route('inicio') }}" class="btn btn-outline-primary mt-3">Inicio</a>
+</div>
 
-        <div>
-            <dt>Email</dt>
-            <dd>{{ $user->email }}</dd>
-        </div>
 
-        <div>
-            <dt>Registrado como</dt>
-            <dd>{{ $user->tipo_usuario }}</dd>
-        </div>
-
-        @if ($user->paciente)
-            <div>
-                <dt>Obra social</dt>
-                <dd>{{ $user->paciente->obra_social }}</dd>
-            </div>
-            
-            <div>
-                <dt>Fecha de nacimiento</dt>
-                <dd>{{ $user->paciente->fecha_nacimiento }}</dd>
-            </div>
-
-            <div>
-                <dt>Dirección</dt>
-                <dd>{{ $user->paciente->direccion }}</dd>
-            </div>
-        @elseif ($user->odontologo)
-            <div>
-                <dt>Matrícula</dt>
-                <dd>{{ $user->odontologo->matricula }}</dd>
-            </div>
-        @endif
-    </dl>
 
     @if ($user->odontologo)
         <section>
@@ -86,9 +144,4 @@
         </section>
     @endif
 
-    <nav>
-        <a href="{{ route('perfil_editar') }}">Editar mi perfil</a>
-        <a href="{{ route('inicio') }}">Inicio</a>
-        <a href="{{ route('mis_turnos') }}">Mis Turnos</a>
-    </nav>
 @endsection
