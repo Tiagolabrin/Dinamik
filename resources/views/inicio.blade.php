@@ -1,10 +1,13 @@
-
 @extends('layouts.app')
 
 @section('title', 'Inicio')
 
 @section('content')
-<style>.app-content {min-height: auto;}</style>
+<style>
+    .app-content {
+        min-height: auto;
+    }
+</style>
 <div class="container">
     @auth
 
@@ -22,80 +25,94 @@
     <nav>
         <div class="row text-center g-3">
             @if (auth()->user()->tipo_usuario === 'paciente')
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Mis turnos</h5>
-                            <p class="card-text">Consultá tus próximos turnos.</p>
-                            <a href="{{ route('mis_turnos') }}" class="btn btn-success">
-                                Ver mis turnos
-                            </a>
-                        </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Mis turnos</h5>
+                        <p class="card-text">Consultá tus próximos turnos.</p>
+                        <a href="{{ route('mis_turnos') }}" class="btn btn-success">
+                            Ver mis turnos
+                        </a>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Reservar un turno</h5>
-                            <p class="card-text">Solicitá tu próximo turno odontológico.</p>
-                            <a href="{{ route('reserva') }}" class="btn btn-primary">
-                                Reservar un turno
-                            </a>
-                        </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Reservar un turno</h5>
+                        <p class="card-text">Solicitá tu próximo turno odontológico.</p>
+                        <a href="{{ route('reserva') }}" class="btn btn-primary">
+                            Reservar un turno
+                        </a>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Mi perfil</h5>
-                            <p class="card-text">Consultá tus datos personales.</p>
-                            <a href="{{ route('perfil') }}" class="btn btn-outline-primary">
-                                Ver mi perfil
-                            </a>
-                        </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Mi perfil</h5>
+                        <p class="card-text">Consultá tus datos personales.</p>
+                        <a href="{{ route('perfil') }}" class="btn btn-outline-primary">
+                            Ver mi perfil
+                        </a>
                     </div>
                 </div>
+            </div>
             @elseif (auth()->user()->tipo_usuario === 'odontologo')
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Mi agenda</h5>
-                            <p class="card-text">Consultá los turnos asignados.</p>
-                            <a href="{{ route('odontologo.agenda') }}" class="btn btn-primary">
-                                Ver mi agenda
-                            </a>
-                        </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Mi agenda</h5>
+                        <p class="card-text">Consultá los turnos asignados.</p>
+                        <a href="{{ route('odontologo.agenda') }}" class="btn btn-primary">
+                            Ver mi agenda
+                        </a>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Mi perfil</h5>
-                            <p class="card-text">Consultá tus datos y disponibilidad.</p>
-                            <a href="{{ route('perfil') }}" class="btn btn-outline-primary">
-                                Ver mi perfil
-                            </a>
-                        </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Mi perfil</h5>
+                        <p class="card-text">Consultá tus datos y disponibilidad.</p>
+                        <a href="{{ route('perfil') }}" class="btn btn-outline-primary">
+                            Ver mi perfil
+                        </a>
                     </div>
                 </div>
+            </div>
+
             @elseif (auth()->user()->tipo_usuario === 'administrador')
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Odontólogos</h5>
-                            <p class="card-text">Registrá una cuenta para un odontólogo.</p>
-                            <a href="{{ route('admin.odontologos.registro') }}" class="btn btn-primary">
-                                Crear odontólogo
-                            </a>
-                        </div>
+
+
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Odontólogos</h5>
+                        <p class="card-text">Administrá las cuentas de los odontólogos.</p>
+                        <a href="{{ route('admin.odontologos.index') }}" class="btn btn-primary">
+                            Ver odontólogos
+                        </a>
                     </div>
                 </div>
-            @else
-                <p>No hay opciones disponibles para este tipo de cuenta.</p>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Consultorio</h5>
+                        <p class="card-text">Consultá y modificá los datos del consultorio.</p>
+                        <a href="{{ route('admin.consultorio.edit') }}" class="btn btn-primary">
+                            Administrar consultorio
+                        </a>
+                    </div>
+                </div>
+            </div>
             @endif
+
         </div>
     </nav>
 
@@ -128,9 +145,9 @@
                     <h2 class="card-title">Iniciar sesión</h2>
 
                     @if ($errors->any())
-                        <div class="alert alert-danger" role="alert">
-                            Revisá el email y la contraseña e intentá nuevamente.
-                        </div>
+                    <div class="alert alert-danger" role="alert">
+                        Revisá el email y la contraseña e intentá nuevamente.
+                    </div>
                     @endif
 
                     <form action="{{ route('login.submit') }}" method="POST">
@@ -146,8 +163,7 @@
                                 value="{{ old('email') }}"
                                 autocomplete="email"
                                 placeholder="usuario@gmail.com"
-                                required
-                            >
+                                required>
                         </div>
 
                         <div class="mb-3">
@@ -159,8 +175,7 @@
                                 class="form-control bg-light"
                                 autocomplete="current-password"
                                 placeholder="**********"
-                                required
-                            >
+                                required>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Ingresar</button>

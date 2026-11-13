@@ -9,6 +9,7 @@ use App\Http\Controllers\InicioController;
 use App\Http\Controllers\ReservaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\ConsultorioController;
 
 Route::get('/', [InicioController::class, 'index'])
     ->name('inicio');
@@ -54,7 +55,7 @@ Route::get('/mis-turnos', [ReservaController::class, 'misTurnos'])
     ->name('mis_turnos');
 
 
-Route::get('/odontologo/agenda', [ReservaController::class, 'agenda'] )
+Route::get('/odontologo/agenda', [ReservaController::class, 'agenda'])
     ->middleware('auth')
     ->name('odontologo.agenda');
 
@@ -66,9 +67,23 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get('/odontologos', [OdontologoController::class, 'index'])
+            ->name('odontologos.index');
+
         Route::get('/odontologos/crear', [OdontologoController::class, 'create'])
             ->name('odontologos.registro');
 
         Route::post('/odontologos', [OdontologoController::class, 'store'])
             ->name('odontologos.store');
+        Route::get('/odontologos/{odontologo}/editar', [OdontologoController::class, 'edit'])
+            ->name('odontologos.edit');
+
+        Route::put('/odontologos/{odontologo}', [OdontologoController::class, 'update'])
+            ->name('odontologos.update');
+            
+        Route::get('/consultorio', [ConsultorioController::class, 'edit'])
+            ->name('consultorio.edit');
+
+        Route::put('/consultorio', [ConsultorioController::class, 'update'])
+            ->name('consultorio.update');
     });
