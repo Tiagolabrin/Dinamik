@@ -16,7 +16,7 @@
 
         .app-content {
             flex: 1;
-            min-height: calc(100vh - 5rem);
+            min-height: auto;
         }
 
         .site-footer {
