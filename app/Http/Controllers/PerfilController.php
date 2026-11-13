@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+
 
 class PerfilController extends Controller
 {
@@ -23,15 +25,16 @@ class PerfilController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'apellido' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
 
-        if($user->paciente){
+        if ($user->paciente) {
             $rules = array_merge($rules, [
-                'obra_social' => ['required', 'string', 'max:255'],
-                'fecha_nacimiento' => ['required', 'date', 'before:today'],
-                'direccion' => ['required', 'string', 'max:255'],
+                'obra_social' => ['nullable', 'string', 'max:255'],
+                'fecha_nacimiento' => ['nullable', 'date'],
+                'direccion' => ['nullable', 'string', 'max:255'],
             ]);
-        }elseif ($user->odontologo){
+        } elseif ($user->odontologo) {
             $rules['matricula'] = ['required', 'string', 'max:255', Rule::unique('odontologos','matricula')->ignore($user->odontologo->id)];
             $rules = array_merge($rules, [
                 'disponibilidades' => ['required', 'array', 'min:1'],
@@ -45,20 +48,32 @@ class PerfilController extends Controller
                 'vacaciones.*.fecha_hasta' => [ 'nullable', 'date_format:Y-m-d','required_with:vacaciones.*.fecha_desde','after_or_equal:vacaciones.*.fecha_desde']
             ]);
         }
-
+        
         $data = $request->validate($rules);
+        $fotoAnterior = $user->foto;
+        $nuevaFoto = null;
 
-        DB::transaction(function () use ($user, $data): void {
+        if ($request->hasFile('foto')) {
+            $nuevaFoto = $request->file('foto')->store('fotos', 'public');
+        }
+        try {
+
+        DB::transaction(function () use ($user, $data, $nuevaFoto): void {
             $user->name = $data['name'];
             $user->apellido = $data['apellido'];
             $user->email = $data['email'];
+
+            if ($nuevaFoto) {
+                $user->foto = $nuevaFoto;
+            }
+
             $user->save();
 
             if ($user->paciente) {
                 $user->paciente->update([
-                    'obra_social' => $data['obra_social'],
-                    'fecha_nacimiento' => $data['fecha_nacimiento'],
-                    'direccion' => $data['direccion'],
+                    'obra_social' => $data['obra_social'] ?? null,
+                    'fecha_nacimiento' => $data['fecha_nacimiento'] ?? null,
+                    'direccion' => $data['direccion'] ?? null,
                 ]);
             } elseif ($user->odontologo) {
                 $odontologo = $user->odontologo;
@@ -89,7 +104,16 @@ class PerfilController extends Controller
                 }
             }
         });
+        } catch (\Throwable $e) {
+            if ($nuevaFoto) {
+                Storage::disk('public')->delete($nuevaFoto);
+            }
 
+            throw $e;
+        }
+        if ($nuevaFoto && $fotoAnterior) {
+            Storage::disk('public')->delete($fotoAnterior);
+        }
         return redirect()
             ->route('perfil')
             ->with('success', 'Perfil actualizado correctamente.');
