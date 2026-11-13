@@ -47,10 +47,10 @@
 
         .contact-image {
             display: block;
-            width: 100px;
+            width: 50px;
             max-width: 100%;
-            height: auto;
-            margin: 1rem auto 0;
+            height: 50px;
+            margin: 1rem 0;
         }
 
         @media (min-width: 768px) {
@@ -58,12 +58,21 @@
                 border-left: 1px solid #dee5ee;
             }
         }
+        .logo {
+    height: 70px;
+    width: auto;
+}
+
     </style>
 </head>
-
 <body class="d-flex flex-column min-vh-100">
-    <header class="bg-primary text-white py-3 px-4">
-        <h1 class="mb-0">Consultorio Odontológico</h1>
+    <header class="bg-primary text-white py-1 px-4">
+        <header class="d-flex justify-content-between align-items-center py-0">
+            <a href="http://127.0.0.1:8000/">
+                <img src="{{ asset('images/consul.png') }}" alt="Logo del consultorio" class="logo">
+            </a>
+            <h1 class="mb-0 text-end fs-5">Consultorio Odontológico</h1>
+        </header>
     </header>
     <div class="app-content">
         @yield('content')
