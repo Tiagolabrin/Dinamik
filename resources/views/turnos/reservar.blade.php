@@ -122,6 +122,7 @@
                     </div>
                 </form>
             @endif
+        <div class="text-center mt-3"><a href="{{ route('inicio') }}" class="btn btn-outline-secondary">Inicio</a></div>
         </div>
     </div>
 </main>
