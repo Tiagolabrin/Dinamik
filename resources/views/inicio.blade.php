@@ -4,7 +4,7 @@
 @section('title', 'Inicio')
 
 @section('content')
-
+<style>.app-content {min-height: auto;}</style>
 <div class="container">
     @auth
 
