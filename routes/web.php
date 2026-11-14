@@ -10,6 +10,7 @@ use App\Http\Controllers\ReservaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ConsultorioController;
+use App\Http\Controllers\Admin\PacienteController;
 
 Route::get('/', [InicioController::class, 'index'])
     ->name('inicio');
@@ -67,6 +68,8 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+        //rutas a odontologos
         Route::get('/odontologos', [OdontologoController::class, 'index'])
             ->name('odontologos.index');
 
@@ -80,10 +83,23 @@ Route::middleware(['auth', 'admin'])
 
         Route::put('/odontologos/{odontologo}', [OdontologoController::class, 'update'])
             ->name('odontologos.update');
-            
+
+
+        //rutas a consultorio 
         Route::get('/consultorio', [ConsultorioController::class, 'edit'])
             ->name('consultorio.edit');
 
         Route::put('/consultorio', [ConsultorioController::class, 'update'])
             ->name('consultorio.update');
+        
+
+        //rutas a pacientes
+        Route::get('/pacientes', [PacienteController::class, 'index'])
+            ->name('pacientes.index');
+
+        Route::get('/pacientes/{paciente}/editar', [PacienteController::class, 'edit'])
+            ->name('pacientes.edit');
+
+        Route::put('/pacientes/{paciente}', [PacienteController::class, 'update'])
+            ->name('pacientes.update');
     });

@@ -111,6 +111,23 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Pacientes</h5>
+
+                        <p class="card-text">
+                            Consultá y modificá los datos de los pacientes.
+                        </p>
+
+                        <a href="{{ route('admin.pacientes.index') }}"
+                            class="btn btn-primary">
+                            Ver pacientes
+                        </a>
+                    </div>
+                </div>
+            </div>
             @endif
 
         </div>
