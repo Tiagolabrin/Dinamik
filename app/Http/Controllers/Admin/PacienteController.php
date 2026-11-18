@@ -7,6 +7,7 @@ use App\Models\Paciente;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PacienteController extends Controller
 {
@@ -48,5 +49,34 @@ class PacienteController extends Controller
         return redirect()
             ->route('admin.pacientes.index')
             ->with('success', 'Datos del paciente actualizados correctamente.');
+    }
+
+    public function destroy(Paciente $paciente): RedirectResponse
+    {
+        $paciente->load('user');
+
+        $turnosFuturos = \RoundlyConsulting\Appointments\Models\Appointment::whereHas(
+            'participants',
+            function ($query) use ($paciente) {
+                $query->where('participant_type', \App\Models\User::class)
+                    ->where('participant_id', $paciente->user_id);
+            }
+        )
+            ->where('starts_at', '>=', now()->startOfDay())
+            ->exists();
+
+        if ($turnosFuturos) {
+            return redirect()
+                ->route('admin.pacientes.index')
+                ->with('error', 'No se puede eliminar este paciente porque tiene turnos agendados.');
+        }
+
+        DB::transaction(function () use ($paciente) {
+            $paciente->user->delete();
+        });
+
+        return redirect()
+            ->route('admin.pacientes.index')
+            ->with('success', 'Paciente eliminado correctamente.');
     }
 }

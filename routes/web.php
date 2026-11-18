@@ -78,11 +78,15 @@ Route::middleware(['auth', 'admin'])
 
         Route::post('/odontologos', [OdontologoController::class, 'store'])
             ->name('odontologos.store');
+
         Route::get('/odontologos/{odontologo}/editar', [OdontologoController::class, 'edit'])
             ->name('odontologos.edit');
 
         Route::put('/odontologos/{odontologo}', [OdontologoController::class, 'update'])
             ->name('odontologos.update');
+
+        Route::delete('/odontologos/{odontologo}', [OdontologoController::class, 'destroy'])
+            ->name('odontologos.destroy');
 
 
         //rutas a consultorio 
@@ -91,7 +95,7 @@ Route::middleware(['auth', 'admin'])
 
         Route::put('/consultorio', [ConsultorioController::class, 'update'])
             ->name('consultorio.update');
-        
+
 
         //rutas a pacientes
         Route::get('/pacientes', [PacienteController::class, 'index'])
@@ -102,4 +106,7 @@ Route::middleware(['auth', 'admin'])
 
         Route::put('/pacientes/{paciente}', [PacienteController::class, 'update'])
             ->name('pacientes.update');
+
+        Route::delete('/pacientes/{paciente}', [PacienteController::class, 'destroy'])
+            ->name('pacientes.destroy');
     });

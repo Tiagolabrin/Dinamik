@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Administrar pacientes')
@@ -7,8 +8,17 @@
 
     <h2 class="mb-4">Administrar pacientes</h2>
 
+    {{-- Mensajes del sistema --}}
     @if (session('success'))
-        <p class="alert alert-success">{{ session('success') }}</p>
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
     @endif
 
     <div class="table-responsive">
@@ -39,6 +49,19 @@
                                 class="btn btn-warning btn-sm">
                                 Editar
                             </a>
+
+                            <form action="{{ route('admin.pacientes.destroy', $paciente) }}"
+                                method="POST"
+                                class="d-inline"
+                                onsubmit="return confirm('¿Estás segura de que querés eliminar este paciente?');">
+
+                                @csrf
+                                @method('DELETE')
+
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    Eliminar
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @empty

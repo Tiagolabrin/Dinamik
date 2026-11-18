@@ -20,32 +20,34 @@ use RoundlyConsulting\Appointments\Models\Appointment;
 
 class ReservaController extends Controller
 {
-    public function sacarTurno(): View{
+    public function sacarTurno(): View
+    {
         $odontologos = Odontologo::with('user')->get();
 
         return view('turnos.reservar', compact('odontologos'));
     }
 
-    public function reservar(Request $request): RedirectResponse{
+    public function reservar(Request $request): RedirectResponse
+    {
         if (! Auth::check()) {
             return redirect()->route('login')->with('error', 'Iniciá sesión para reservar un turno.');
         }
-    
+
         $usuario = User::findOrFail(Auth::id());
-    
+
         $data = $request->validate([
             'odontologo_id' => ['required', 'integer', 'exists:odontologos,id'],
             'fecha' => ['required', 'date', 'after_or_equal:today'],
             'horario' => ['required', 'date_format:H:i'],
             'observaciones' => ['nullable', 'string', 'max:1000'],
         ]);
-    
+
         $odontologo = Odontologo::with('user')->findOrFail($data['odontologo_id']);
-    
+
         $timezone = config('appointments.timezone') ?: config('app.timezone', 'UTC');
-    
+
         $fecha = CarbonImmutable::parse($data['fecha'], $timezone);
-    
+
         $diaSemana = [
             1 => 'lunes',
             2 => 'martes',
@@ -55,27 +57,27 @@ class ReservaController extends Controller
             6 => 'sabado',
             7 => 'domingo',
         ][$fecha->dayOfWeekIso];
-    
+
         $duracion = max(1, (int) config('appointments.default_duration_minutes', 60));
-    
+
         $inicio = CarbonImmutable::parse(
             $fecha->toDateString() . ' ' . $data['horario'],
             $timezone
         );
-    
+
         $fin = $inicio->addMinutes($duracion);
-    
+
         $hayVacaciones = $odontologo->vacaciones()
             ->whereDate('fecha_desde', '<=', $fecha->toDateString())
             ->whereDate('fecha_hasta', '>=', $fecha->toDateString())
             ->exists();
-    
+
         if ($hayVacaciones) {
             throw ValidationException::withMessages([
                 'fecha' => 'Ese odontólogo no atiende en la fecha seleccionada.',
             ]);
         }
-    
+
         $dentroDeDisponibilidad = $odontologo->disponibilidades()
             ->where('dia_semana', $diaSemana)
             ->get()
@@ -84,24 +86,24 @@ class ReservaController extends Controller
                     $fecha->toDateString() . ' ' . $disponibilidad->hora_inicio,
                     $timezone
                 );
-    
+
                 $hasta = CarbonImmutable::parse(
                     $fecha->toDateString() . ' ' . $disponibilidad->hora_fin,
                     $timezone
                 );
-    
+
                 return $inicio >= $desde && $fin <= $hasta;
             });
-    
+
         if (! $dentroDeDisponibilidad || $inicio->isPast()) {
             throw ValidationException::withMessages([
                 'horario' => 'Ese horario no está dentro de la disponibilidad del odontólogo.',
             ]);
         }
-    
+
         $inicioUtc = $inicio->setTimezone('UTC');
         $finUtc = $fin->setTimezone('UTC');
-    
+
         $ocupado = Appointment::query()
             ->whereHas('participants', function ($query) use ($odontologo) {
                 $query->where('participant_type', $odontologo->getMorphClass())
@@ -111,13 +113,13 @@ class ReservaController extends Controller
             ->where('starts_at', '<', $finUtc->toDateTimeString())
             ->where('ends_at', '>', $inicioUtc->toDateTimeString())
             ->exists();
-    
+
         if ($ocupado) {
             throw ValidationException::withMessages([
                 'horario' => 'Ese horario ya fue reservado. Elegí otro.',
             ]);
         }
-    
+
         $appointment = DB::transaction(function () use (
             $data,
             $odontologo,
@@ -136,21 +138,33 @@ class ReservaController extends Controller
                 ->withStatus(Status::Confirmed)
                 ->preventConflicts()
                 ->create();
-    
+            $meta = $appointment->meta?->all() ?? [];
+
+            $appointment->update([
+                'meta' => array_merge($meta, [
+                    'odontologo_nombre' => $odontologo->user->name,
+                    'odontologo_apellido' => $odontologo->user->apellido,
+                    'odontologo_matricula' => $odontologo->matricula,
+                    'paciente_nombre' => $usuario->name,
+                    'paciente_apellido' => $usuario->apellido,
+                ]),
+            ]);
+
             if (! empty($data['observaciones'])) {
                 $appointment->update([
                     'description' => $data['observaciones'],
                 ]);
             }
-    
+
             return $appointment;
         });
-    
+
         return redirect()->route('turno.confirmado', $appointment)
             ->with('success', 'Turno reservado correctamente.');
     }
 
-    public function horarios(Request $request): JsonResponse{
+    public function horarios(Request $request): JsonResponse
+    {
         $data = $request->validate([
             'odontologo_id' => ['required', 'integer', 'exists:odontologos,id'],
             'fecha' => ['required', 'date', 'after_or_equal:today'],
@@ -239,7 +253,8 @@ class ReservaController extends Controller
         ]);
     }
 
-    public function misTurnos(): View{
+    public function misTurnos(): View
+    {
         $usuario = User::findOrFail(Auth::id());
 
         $appointments = Appointment::query()
@@ -254,12 +269,13 @@ class ReservaController extends Controller
         return view('turnos.mis_turnos', compact('appointments'));
     }
 
-    public function agenda(): View{
+    public function agenda(): View
+    {
         $usuario = Auth::user();
         $odontologo = $usuario->odontologo;
-    
+
         abort_if($usuario->tipo_usuario !== 'odontologo' || ! $odontologo, 403);
-    
+
         $appointments = Appointment::query()
             ->with('participants.participant')
             ->whereHas('participants', function ($query) use ($odontologo) {
@@ -269,14 +285,14 @@ class ReservaController extends Controller
             })
             ->orderBy('starts_at')
             ->get();
-    
+
         return view('odontologo.agenda', compact('appointments'));
     }
-    
+
     public function confirmacion(Appointment $appointment): View
     {
         $usuario = Auth::user();
-    
+
         abort_unless($usuario instanceof User, 403);
 
         abort_unless(
@@ -287,10 +303,9 @@ class ReservaController extends Controller
                 ->exists(),
             403
         );
-    
+
         $consultorio = Consultorio::first();
-    
+
         return view('turnos.confirmacion', compact('appointment', 'consultorio'));
     }
 }
-?>

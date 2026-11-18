@@ -55,6 +55,40 @@ class OdontologoController extends Controller
             ->with('success', 'Datos del odontólogo actualizados correctamente.');
     }
 
+
+    public function destroy(Odontologo $odontologo): RedirectResponse
+    {
+        $odontologo->load('user');
+
+        $turnosFuturos = \RoundlyConsulting\Appointments\Models\Appointment::whereHas(
+            'participants',
+            function ($query) use ($odontologo) {
+                $query->where('participant_type', get_class($odontologo))
+                    ->where('participant_id', $odontologo->id);
+            }
+        )
+            ->where('starts_at', '>=', now()->startOfDay())
+            ->exists();
+
+        if ($turnosFuturos) {
+            return redirect()
+                ->route('admin.odontologos.index')
+                ->with('error', 'No se puede eliminar este odontólogo porque tiene turnos proximos agendados.');
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($odontologo) {
+            $odontologo->disponibilidades()->delete();
+            $odontologo->vacaciones()->delete();
+
+            $odontologo->user->delete();
+        });
+
+        return redirect()
+            ->route('admin.odontologos.index')
+            ->with('success', 'Odontólogo eliminado correctamente.');
+    }
+
+
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
