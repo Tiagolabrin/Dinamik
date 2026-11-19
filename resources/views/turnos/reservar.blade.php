@@ -23,50 +23,60 @@
                     Todavía no hay odontólogos disponibles para reservar.
                 </div>
             @else
-                <form action="{{ route('reserva.store') }}" method="POST" class="card">
-                    @csrf
+               <form action="{{ route('reserva.store') }}" method="POST" class="card">
+            @csrf
 
-                    <div class="card-body">
-                        @if ($errors->any())
-                            <div class="alert alert-danger" role="alert">
-                                <p class="mb-2">Revisá los datos del formulario.</p>
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
+            <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert alert-danger" role="alert">
+                        <p class="mb-2">Revisá los datos del formulario.</p>
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-                        <div class="mb-3">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="mb-3 mt-3">
                             <label for="odontologo" class="form-label">Odontólogo</label>
-                            <select
-                                name="odontologo_id"
-                                id="odontologo"
-                                class="form-select"
-                                required
-                            >
+                            <select name="odontologo_id" id="odontologo" class="form-select form-select-sm w-auto" required>
                                 <option value="">Seleccioná un odontólogo</option>
                                 @foreach ($odontologos as $odontologo)
-                                    <option
-                                        value="{{ $odontologo->id }}"
-                                        @selected(old('odontologo_id') == $odontologo->id)
-                                    >
-                                        {{ $odontologo->user->name }} {{ $odontologo->user->apellido }}
-                                    </option>
+                                    <option value="{{ $odontologo->id }}" @selected(old('odontologo_id') == $odontologo->id)>{{ $odontologo->user->name }} {{ $odontologo->user->apellido }}</option>
                                 @endforeach
                             </select>
                         </div>
-
-                        <input
-                            type="hidden"
-                            name="fecha"
-                            id="fecha"
-                            value="{{ old('fecha') }}"
-                        >
                         <p id="fecha-seleccionada" class="form-text" role="status" aria-live="polite"></p>
 
-                        <section id="seccion-calendario" class="calendar" aria-labelledby="mes-calendario" hidden>
+                        <section id="seccion-horarios" hidden>
+                            <div class="mb-3">
+                                <label for="horario" class="form-label">Horario disponible</label>
+                                <select name="horario" id="horario" class="form-select w-auto" required disabled>
+                                    <option value="">Elegí odontólogo y fecha</option>
+                                </select>
+                                <div id="mensaje-horarios" class="form-text" role="status" aria-live="polite"></div>
+                            </div>
+                        </section>
+
+                        <section id="seccion-confirmacion" hidden>
+                            <div class="d-flex flex-column gap-3">
+                                <div>
+                                    <label for="observaciones" class="form-label">Observaciones</label>
+                                    <textarea id="observaciones" name="observaciones" class="form-control" placeholder="Opcional">{{ old('observaciones') }}</textarea>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">Confirmar reserva</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="hidden" name="fecha" id="fecha" value="{{ old('fecha') }}">
+
+                        <section id="seccion-calendario" class="calendar ms-auto" aria-labelledby="mes-calendario" hidden>
                             <header class="calendar-header">
                                 <button type="button" id="mes-anterior" aria-label="Mes anterior">←</button>
                                 <h2 id="mes-calendario"></h2>
@@ -85,42 +95,10 @@
 
                             <div id="dias-calendario" class="days" aria-label="Elegí una fecha"></div>
                         </section>
-
-                        <section id="seccion-horarios" hidden>
-                            <div class="mb-3">
-                                <label for="horario" class="form-label">Horario disponible</label>
-                                <select
-                                    name="horario"
-                                    id="horario"
-                                    class="form-select"
-                                    required
-                                    disabled
-                                >
-                                    <option value="">Elegí odontólogo y fecha</option>
-                                </select>
-                                <div id="mensaje-horarios" class="form-text" role="status" aria-live="polite"></div>
-                            </div>
-                        </section>
-
-                        <section id="seccion-confirmacion" hidden>
-                            <div class="mb-3">
-                                <label for="observaciones" class="form-label">Observaciones</label>
-                                <textarea
-                                    id="observaciones"
-                                    name="observaciones"
-                                    class="form-control"
-                                    rows="3"
-                                    maxlength="1000"
-                                    placeholder="Opcional"
-                                >{{ old('observaciones') }}</textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary">
-                                Confirmar reserva
-                            </button>
-                        </section>
                     </div>
-                </form>
+                </div>
+            </div>
+        </form>
             @endif
         <div class="text-center mt-3"><a href="{{ route('inicio') }}" class="btn btn-outline-secondary">Inicio</a></div>
         </div>
@@ -129,7 +107,6 @@
 <style>
     .calendar {
         max-width: 430px;
-        margin-block: 24px;
         padding: 22px 20px;
         border: 1px solid #eae8e3;
         border-radius: 24px;
@@ -329,53 +306,34 @@
     mostrarFechaSeleccionada();
 
     async function cargarHorarios() {
-        seccionConfirmacion.hidden = true;
-        seccionHorarios.hidden = !(selectOdontologo.value && inputFecha.value);
+    seccionConfirmacion.hidden = true;
+    seccionHorarios.hidden = !(selectOdontologo.value && inputFecha.value);
+    const solicitud = ++solicitudHorarios;
+    selectHorario.disabled = true;
+    mensajeHorarios.textContent = '';
 
-        const solicitudActual = ++solicitudHorarios;
-        selectHorario.disabled = true;
-        mensajeHorarios.textContent = '';
-
-        if (!selectOdontologo.value || !inputFecha.value) {
-            selectHorario.replaceChildren(new Option('Elegí odontólogo y fecha', ''));
-            return;
-        }
-
-        selectHorario.replaceChildren(new Option('Buscando horarios…', ''));
-
-        try {
-            const url = new URL(urlHorarios, window.location.origin);
-            url.searchParams.set('odontologo_id', selectOdontologo.value);
-            url.searchParams.set('fecha', inputFecha.value);
-
-            const respuesta = await fetch(url, {
-                headers: { Accept: 'application/json' },
-            });
-
-            if (!respuesta.ok) {
-                throw new Error('No se pudieron cargar los horarios.');
-            }
-
-            const datos = await respuesta.json();
-            if (solicitudActual !== solicitudHorarios) return;
-
-            selectHorario.replaceChildren(new Option('Seleccioná un horario', ''));
-            for (const hora of datos.horarios) {
-                selectHorario.add(new Option(hora, hora));
-            }
-
-            if (datos.horarios.length === 0) {
-                mensajeHorarios.textContent = 'No hay horarios disponibles para esa fecha.';
-                return;
-            }
-
-            selectHorario.disabled = false;
-        } catch (error) {
-            if (solicitudActual !== solicitudHorarios) return;
-            selectHorario.replaceChildren(new Option('Error al cargar horarios', ''));
-            mensajeHorarios.textContent = 'No se pudieron cargar los horarios. Probá de nuevo.';
-        }
+    if (!selectOdontologo.value || !inputFecha.value) {
+        return selectHorario.replaceChildren(new Option('Elegí odontólogo y fecha', ''));
     }
+
+    selectHorario.replaceChildren(new Option('Buscando horarios…', ''));
+
+    try {
+        const params = new URLSearchParams({ odontologo_id: selectOdontologo.value, fecha: inputFecha.value });
+        const respuesta = await fetch(`${urlHorarios}?${params}`, { headers: { Accept: 'application/json' } });
+        if (!respuesta.ok) throw new Error();
+        const { horarios } = await respuesta.json();
+        if (solicitud !== solicitudHorarios) return;
+
+        selectHorario.replaceChildren(new Option('Seleccioná un horario', ''), ...horarios.map(h => new Option(h, h)));
+        selectHorario.disabled = horarios.length === 0;
+        if (horarios.length === 0) mensajeHorarios.textContent = 'No hay horarios disponibles para esa fecha.';
+    } catch {
+        if (solicitud !== solicitudHorarios) return;
+        selectHorario.replaceChildren(new Option('Error al cargar horarios', ''));
+        mensajeHorarios.textContent = 'No se pudieron cargar los horarios. Probá de nuevo.';
+    }
+}
 
     selectOdontologo.addEventListener('change', () => {
         inputFecha.value = "";
