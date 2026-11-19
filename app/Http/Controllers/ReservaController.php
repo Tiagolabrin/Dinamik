@@ -303,18 +303,18 @@ class ReservaController extends Controller
         abort_unless($esAdministrador || $esPaciente || $esOdontologo, 403);
 
         if ($appointment->starts_at->isPast()) {
-            return redirect()->route('mis_turnos')
+            return redirect()->route($esOdontologo && ! $esAdministrador ? 'odontologo.agenda' : 'mis_turnos')
                 ->with('error', 'No se puede cancelar un turno que ya comenzó.');
         }
 
         if (! $appointment->status->canTransitionTo(Status::Cancelled)) {
-            return redirect()->route('mis_turnos')
+            return redirect()->route($esOdontologo && ! $esAdministrador ? 'odontologo.agenda' : 'mis_turnos')
                 ->with('error', 'Este turno ya fue cancelado o no se puede cancelar.');
         }
 
         Appointments::for($appointment)->cancel();
 
-        return redirect()->route('mis_turnos')
+        return redirect()->route($esOdontologo && ! $esAdministrador ? 'odontologo.agenda' : 'mis_turnos')
             ->with('success', 'El turno se canceló correctamente.');
     }
 
