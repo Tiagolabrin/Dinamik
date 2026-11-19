@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\AuthController;
@@ -55,6 +54,9 @@ Route::get('/mis-turnos', [ReservaController::class, 'misTurnos'])
     ->middleware('auth')
     ->name('mis_turnos');
 
+Route::post('/turnos/{appointment}/cancelar', [ReservaController::class, 'cancelarTurno'])
+    ->middleware('auth')
+    ->name('turnos.cancelar');
 
 Route::get('/odontologo/agenda', [ReservaController::class, 'agenda'])
     ->middleware('auth')

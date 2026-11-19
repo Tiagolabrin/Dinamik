@@ -256,17 +256,66 @@ class ReservaController extends Controller
     public function misTurnos(): View
     {
         $usuario = User::findOrFail(Auth::id());
+        $query = Appointment::query();
 
-        $appointments = Appointment::query()
-            ->whereHas('participants', function ($query) use ($usuario) {
+        if ($usuario->tipo_usuario === 'administrador') {
+            // El administrador puede consultar y cancelar cualquier turno.
+        } elseif ($usuario->tipo_usuario === 'odontologo') {
+            $odontologo = $usuario->odontologo;
+            abort_unless($odontologo, 403);
+
+            $query->whereHas('participants', function ($query) use ($odontologo) {
+                $query->where('participant_type', $odontologo->getMorphClass())
+                    ->where('participant_id', $odontologo->getKey())
+                    ->where('role', ParticipantRole::Organiser->value);
+            });
+        } else {
+            $query->whereHas('participants', function ($query) use ($usuario) {
                 $query->where('participant_type', $usuario->getMorphClass())
                     ->where('participant_id', $usuario->getKey())
                     ->where('role', ParticipantRole::Attendee->value);
-            })
-            ->orderBy('starts_at')
-            ->get();
+            });
+        }
+
+        $appointments = $query->orderBy('starts_at')->get();
 
         return view('turnos.mis_turnos', compact('appointments'));
+    }
+
+    public function cancelarTurno(Appointment $appointment): RedirectResponse
+    {
+        $usuario = User::findOrFail(Auth::id());
+        $esAdministrador = $usuario->tipo_usuario === 'administrador';
+        $esPaciente = $appointment->participants()
+            ->where('participant_type', $usuario->getMorphClass())
+            ->where('participant_id', $usuario->getKey())
+            ->where('role', ParticipantRole::Attendee->value)
+            ->exists();
+        $odontologo = $usuario->odontologo;
+        $esOdontologo = $usuario->tipo_usuario === 'odontologo'
+            && $odontologo
+            && $appointment->participants()
+                ->where('participant_type', $odontologo->getMorphClass())
+                ->where('participant_id', $odontologo->getKey())
+                ->where('role', ParticipantRole::Organiser->value)
+                ->exists();
+
+        abort_unless($esAdministrador || $esPaciente || $esOdontologo, 403);
+
+        if ($appointment->starts_at->isPast()) {
+            return redirect()->route('mis_turnos')
+                ->with('error', 'No se puede cancelar un turno que ya comenzó.');
+        }
+
+        if (! $appointment->status->canTransitionTo(Status::Cancelled)) {
+            return redirect()->route('mis_turnos')
+                ->with('error', 'Este turno ya fue cancelado o no se puede cancelar.');
+        }
+
+        Appointments::for($appointment)->cancel();
+
+        return redirect()->route('mis_turnos')
+            ->with('success', 'El turno se canceló correctamente.');
     }
 
     public function agenda(): View
