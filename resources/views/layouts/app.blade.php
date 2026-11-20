@@ -72,10 +72,13 @@
                 border-left: 1px solid #dee5ee;
             }
         }
-
         .logo {
             height: 70px;
             width: auto;
+        }
+        .logo:hover{
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+            transform: scale(0.95);
         }
     </style>
 </head>
