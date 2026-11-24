@@ -1,58 +1,111 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Consultorio Lupiañez
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 1. Nombre y descripción de la aplicación
 
-## About Laravel
+**Consultorio Lupiañez** es un turnero web para un consultorio odontológico.
+Permite que los pacientes soliciten turnos según la disponibilidad de los
+odontólogos y que cada perfil gestione la información correspondiente a sus
+tareas.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 2. Integrantes del grupo
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Tiago Labrin
+- Josefina Lupiañez
+- Paloma Stucke
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 3. Funcionalidades implementadas
 
-## Learning Laravel
+- Registro de pacientes e inicio y cierre de sesión.
+- Edición del perfil propio; el paciente puede actualizar sus datos personales
+  y el odontólogo también puede gestionar su matrícula, disponibilidades y
+  períodos de vacaciones.
+- Consulta de odontólogos y selección de fecha y horarios disponibles.
+- Reserva de turnos con observaciones opcionales y pantalla de confirmación con
+  los datos del consultorio.
+- Consulta de turnos propios por pacientes y consulta de agenda por
+  odontólogos.
+- Cancelación de turnos futuros por el paciente titular, el odontólogo
+  responsable o el administrador.
+- Administración de odontólogos y pacientes: alta, consulta, edición y baja,
+  con restricciones para impedir eliminaciones cuando existen turnos futuros.
+- Alta y actualización de los datos de contacto del consultorio.
+- Validación de los datos recibidos y control de disponibilidad, vacaciones y
+  superposición de turnos al reservar.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 4. Modelo de datos y relaciones entre entidades
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **User** almacena los datos y credenciales de las cuentas. Un usuario puede
+  tener un perfil de **Paciente** o de **Odontologo**; estos perfiles se
+  relacionan con `User` mediante una relación uno a uno.
+- **Odontologo** tiene muchas **Disponibilidad** y muchos períodos de
+  **Vacaciones**. Cada disponibilidad y período de vacaciones pertenece a un
+  odontólogo (relaciones uno a muchos).
+- **Appointment** almacena el turno, su fecha y horario, duración, estado,
+  descripción y metadatos. La librería registra sus participantes en
+  `appointment_participants`, una asociación polimórfica que relaciona un turno
+  con el odontólogo organizador y el paciente asistente. El rol de cada
+  participante queda guardado en esa asociación.
+- **Consultorio** almacena la dirección, el teléfono y el correo de contacto.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Las relaciones se definen en los modelos Eloquent y se utilizan para consultar
+perfiles, disponibilidades, vacaciones y participantes de los turnos.
 
-## Agentic Development
+## 5. Perfiles de usuario y permisos
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+- **Administrador:** puede crear, consultar, editar y eliminar odontólogos;
+  consultar, editar y eliminar pacientes; y cargar o actualizar los datos del
+  consultorio. También puede consultar y cancelar turnos. La aplicación no
+  ofrece actualmente funciones para editar o eliminar turnos: para un turno,
+  la acción disponible es cancelarlo.
+- **Odontólogo:** puede consultar su agenda, cancelar sus propios turnos
+  futuros y editar su perfil, matrícula, disponibilidades y vacaciones.
+- **Paciente:** puede registrarse, editar su perfil, consultar horarios,
+  reservar turnos y cancelar sus propios turnos futuros.
 
-```bash
-composer require laravel/boost --dev
+Las rutas de administración requieren una sesión iniciada y el middleware de
+administrador. Las operaciones de turnos comprueban además quién participa en
+cada turno.
 
-php artisan boost:install
+## 6. Funcionalidad AJAX
+
+En el formulario de reserva, al elegir un odontólogo y una fecha, JavaScript
+envía una petición asíncrona con `fetch()` al endpoint
+`GET /reserva/horarios`, incluyendo el identificador del odontólogo y la fecha.
+Laravel valida esos datos y responde con un JSON que contiene los horarios
+disponibles, considerando la disponibilidad semanal, las vacaciones y los
+turnos ya reservados. La página actualiza la lista de horarios sin recargarse y
+muestra un mensaje si no hay horarios o si ocurre un error.
+
+## 7. Librería externa y justificación
+
+El proyecto utiliza
+[`roundly-consulting/appointments-for-laravel`](https://github.com/roundly-consulting/appointments-for-laravel),
+declarada en `composer.json`. Se eligió para modelar y persistir turnos,
+asociarles participantes con roles y administrar sus estados. En el flujo de
+reserva, la librería crea el turno con su fecha, duración y participantes, le
+asigna el estado confirmado y ayuda a evitar superposiciones. La aplicación
+complementa con sus reglas de disponibilidad y
+vacaciones del odontólogo antes de guardar la reserva.
+
+## Datos de prueba
+
+En entornos distintos de producción, `php artisan migrate --seed` crea el
+administrador inicial y datos de demostración para probar los perfiles de
+paciente y odontólogo, sus disponibilidades y vacaciones, un turno futuro y los
+datos del consultorio. Antes de ejecutarlo, configurá en `.env` las credenciales
+del administrador inicial y contraseñas propias de al menos 8 caracteres para
+las cuentas de demostración:
+
+```dotenv
+ADMIN_INITIAL_NAME=Nombre del administrador
+ADMIN_INITIAL_EMAIL=admin@example.test
+ADMIN_INITIAL_PASSWORD=una-clave-segura
+DEMO_PACIENTE_PASSWORD=una-clave-segura
+DEMO_ODONTOLOGO_PASSWORD=otra-clave-segura
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Las cuentas de demostración son `paciente.demo@example.test` y
+`odontologa.demo@example.test`. El seeder no reemplaza los datos existentes del
+consultorio ni las contraseñas de cuentas que ya creó. Si necesitás reconstruir
+una base local desde cero, podés usar `php artisan migrate:fresh --seed`; ese
+comando elimina primero todas las tablas y sus datos.

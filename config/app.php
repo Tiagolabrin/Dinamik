@@ -21,6 +21,11 @@ return [
         'password' => env('ADMIN_INITIAL_PASSWORD'),
     ],
 
+    'demo_accounts' => [
+        'paciente_password' => env('DEMO_PACIENTE_PASSWORD'),
+        'odontologo_password' => env('DEMO_ODONTOLOGO_PASSWORD'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -71,7 +76,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'America/Argentina/Buenos_Aires'),
 
     /*
     |--------------------------------------------------------------------------
