@@ -25,7 +25,9 @@ tareas.
 - Consulta de turnos propios por pacientes y consulta de agenda por
   odontólogos.
 - Cancelación de turnos futuros por el paciente titular, el odontólogo
-  responsable o el administrador.
+  responsable o el administrador. La cancelación guarda un aviso para el
+  paciente y el odontólogo; Notific8 lo muestra cuando cada uno vuelve a usar
+  la aplicación.
 - Administración de odontólogos y pacientes: alta, consulta, edición y baja,
   con restricciones para impedir eliminaciones cuando existen turnos futuros.
 - Alta y actualización de los datos de contacto del consultorio.
@@ -68,13 +70,25 @@ cada turno.
 
 ## 6. Funcionalidad AJAX
 
-En el formulario de reserva, al elegir un odontólogo y una fecha, JavaScript
-envía una petición asíncrona con `fetch()` al endpoint
-`GET /reserva/horarios`, incluyendo el identificador del odontólogo y la fecha.
-Laravel valida esos datos y responde con un JSON que contiene los horarios
-disponibles, considerando la disponibilidad semanal, las vacaciones y los
-turnos ya reservados. La página actualiza la lista de horarios sin recargarse y
-muestra un mensaje si no hay horarios o si ocurre un error.
+La aplicación utiliza la API `fetch()` de JavaScript para hacer peticiones
+asíncronas y actualizar información sin recargar la página:
+
+- **Horarios de reserva:** al elegir un odontólogo y una fecha, el formulario
+  consulta `GET /reserva/horarios` y envía `odontologo_id` y `fecha`. Laravel
+  valida los datos y responde con JSON (`horarios`), calculados según la
+  disponibilidad semanal, las vacaciones y los turnos existentes. JavaScript
+  actualiza las opciones de horario y comunica si no hay disponibilidad o si
+  ocurre un error.
+- **Notificaciones de cancelación:** al cargar una página autenticada,
+  `resources/js/app.js` consulta `GET /notificaciones/no-leidas`. Laravel
+  devuelve las notificaciones pendientes del usuario y Notific8 las presenta
+  como avisos visuales. Después, JavaScript envía sus identificadores a
+  `POST /notificaciones/leidas`, incluyendo el token CSRF, para marcarlas como
+  leídas. La consulta devuelve hasta 50 avisos pendientes por vez.
+
+Notific8 se encarga únicamente de mostrar los avisos; las peticiones AJAX las
+realiza `fetch()` y Laravel guarda y recupera las notificaciones. Estas se
+consultan al cargar las páginas, no en tiempo real mientras están abiertas.
 
 ## 7. Librería externa y justificación
 
@@ -86,6 +100,15 @@ reserva, la librería crea el turno con su fecha, duración y participantes, le
 asigna el estado confirmado y ayuda a evitar superposiciones. La aplicación
 complementa con sus reglas de disponibilidad y
 vacaciones del odontólogo antes de guardar la reserva.
+
+Para avisos visuales se utiliza
+[`notific8`](https://github.com/pynklynn/notific8), instalada como dependencia
+JavaScript en `package.json`. Los avisos de cancelación se guardan mediante las
+notificaciones de base de datos de Laravel y se muestran con Notific8 cuando el
+destinatario entra a la aplicación. Esta implementación no envía correos.
+
+Después de instalar las dependencias del proyecto, ejecutá `npm run build` para
+generar los recursos JavaScript y CSS usados por Vite.
 
 ## Datos de prueba
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\RegistroController;
 use App\Http\Controllers\Admin\OdontologoController;
 use App\Http\Controllers\InicioController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ReservaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,13 @@ Route::post('/login', [AuthController::class, 'login'])
 
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
+
+Route::middleware('auth')->prefix('notificaciones')->name('notificaciones.')->group(function () {
+    Route::get('/no-leidas', [NotificacionController::class, 'noLeidas'])
+        ->name('no-leidas');
+    Route::post('/leidas', [NotificacionController::class, 'marcarLeidas'])
+        ->name('leidas');
+});
 
 Route::view('/registro', 'registro')
     ->name('registro');

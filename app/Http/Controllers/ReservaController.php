@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Consultorio;
 use App\Models\User;
 use App\Models\Odontologo;
+use App\Notifications\TurnoCanceladoNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -302,19 +303,74 @@ class ReservaController extends Controller
 
         abort_unless($esAdministrador || $esPaciente || $esOdontologo, 403);
 
-        if ($appointment->starts_at->isPast()) {
-            return redirect()->route($esOdontologo && ! $esAdministrador ? 'odontologo.agenda' : 'mis_turnos')
+        $rutaRedireccion = $esOdontologo && ! $esAdministrador ? 'odontologo.agenda' : 'mis_turnos';
+        $resultado = DB::transaction(function () use ($appointment, $usuario): ?string {
+            $turno = Appointment::query()
+                ->lockForUpdate()
+                ->findOrFail($appointment->getKey());
+
+            if ($turno->starts_at->isPast()) {
+                return 'iniciado';
+            }
+
+            if (! $turno->status->canTransitionTo(Status::Cancelled)) {
+                return 'no_cancelable';
+            }
+
+            $paciente = $turno->participants()
+                ->where('participant_type', (new User)->getMorphClass())
+                ->where('role', ParticipantRole::Attendee->value)
+                ->with('participant')
+                ->firstOrFail()
+                ->participant;
+            $participanteOdontologo = $turno->participants()
+                ->where('participant_type', (new Odontologo)->getMorphClass())
+                ->where('role', ParticipantRole::Organiser->value)
+                ->with('participant.user')
+                ->firstOrFail()
+                ->participant;
+
+            if (! $paciente instanceof User || ! $participanteOdontologo instanceof Odontologo) {
+                throw new \RuntimeException('No se pudieron identificar los participantes del turno cancelado.');
+            }
+
+            $odontologo = $participanteOdontologo->user;
+            if (! $odontologo instanceof User) {
+                throw new \RuntimeException('No se pudo identificar la cuenta del odontólogo del turno cancelado.');
+            }
+
+            $fechaTurno = $turno->starts_at
+                ->setTimezone(config('app.timezone'))
+                ->format('d/m/Y H:i');
+            $canceladoPor = trim($usuario->name.' '.$usuario->apellido);
+
+            Appointments::for($turno)->cancel();
+
+            $paciente->notify(new TurnoCanceladoNotification(
+                $turno->name,
+                $fechaTurno,
+                $canceladoPor,
+            ));
+            $odontologo->notify(new TurnoCanceladoNotification(
+                $turno->name,
+                $fechaTurno,
+                $canceladoPor,
+            ));
+
+            return null;
+        });
+
+        if ($resultado === 'iniciado') {
+            return redirect()->route($rutaRedireccion)
                 ->with('error', 'No se puede cancelar un turno que ya comenzó.');
         }
 
-        if (! $appointment->status->canTransitionTo(Status::Cancelled)) {
-            return redirect()->route($esOdontologo && ! $esAdministrador ? 'odontologo.agenda' : 'mis_turnos')
+        if ($resultado === 'no_cancelable') {
+            return redirect()->route($rutaRedireccion)
                 ->with('error', 'Este turno ya fue cancelado o no se puede cancelar.');
         }
 
-        Appointments::for($appointment)->cancel();
-
-        return redirect()->route($esOdontologo && ! $esAdministrador ? 'odontologo.agenda' : 'mis_turnos')
+        return redirect()->route($rutaRedireccion)
             ->with('success', 'El turno se canceló correctamente.');
     }
 
