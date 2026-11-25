@@ -105,7 +105,8 @@ Para avisos visuales se utiliza
 [`notific8`](https://github.com/pynklynn/notific8), instalada como dependencia
 JavaScript en `package.json`. Los avisos de cancelación se guardan mediante las
 notificaciones de base de datos de Laravel y se muestran con Notific8 cuando el
-destinatario entra a la aplicación. Esta implementación no envía correos.
+destinatario entra a la aplicación. Además, si la sesión está autenticada permite consultar una
+bandeja con las últimas 15 notificaciones. Esta implementación no envía correos.
 
 Después de instalar las dependencias del proyecto, ejecutá `npm run build` para
 generar los recursos JavaScript y CSS usados por Vite.

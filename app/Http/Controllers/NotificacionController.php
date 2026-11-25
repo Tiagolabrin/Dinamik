@@ -2,17 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Notifications\TurnoCanceladoNotification;
+use App\Notificaciones\TurnoCanceladoNotificacion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class NotificacionController extends Controller
 {
+    public function recientes(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $query = $user->notificaciones()
+            ->where('type', TurnoCanceladoNotificacion::class);
+
+        $notificaciones = (clone $query)
+            ->latest()
+            ->limit(15)
+            ->get()
+            ->map(fn ($notificacion): array => [
+                'id' => $notificacion->id,
+                'title' => $notificacion->data['title'],
+                'message' => $notificacion->data['message'],
+                'read' => $notificacion->read_at !== null,
+                'created_at' => $notificacion->created_at->toIso8601String(),
+            ]);
+
+        return response()->json([
+            'notifications' => $notificaciones,
+            'unread_count' => (clone $query)->whereNull('read_at')->count(),
+        ]);
+    }
+
     public function noLeidas(Request $request): JsonResponse
     {
         $notifications = $request->user()
-            ->unreadNotifications()
-            ->where('type', TurnoCanceladoNotification::class)
+            ->notificaciones()
+            ->whereNull('read_at')
+            ->where('type', TurnoCanceladoNotificacion::class)
             ->oldest()
             ->limit(50)
             ->get()
@@ -33,8 +58,9 @@ class NotificacionController extends Controller
         ]);
 
         $request->user()
-            ->unreadNotifications()
-            ->where('type', TurnoCanceladoNotification::class)
+            ->notificaciones()
+            ->whereNull('read_at')
+            ->where('type', TurnoCanceladoNotificacion::class)
             ->whereIn('id', $validated['ids'])
             ->update(['read_at' => now()]);
 

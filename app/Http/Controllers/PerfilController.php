@@ -8,16 +8,17 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Validation\Rule;
 
 class PerfilController extends Controller
 {
-    public function update(Request $request): RedirectResponse {
+    public function update(Request $request): RedirectResponse
+    {
         $user = $request->user();
 
-        if (! $user instanceof User){
+        if (! $user instanceof User) {
             abort(403);
         }
 
@@ -26,6 +27,13 @@ class PerfilController extends Controller
             'apellido' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'current_password' => ['required_with:password,password_confirmation', 'current_password'],
+            'password' => ['nullable', 'required_with:current_password,password_confirmation', 'string', 'min:8', 'confirmed'],
+        ];
+
+        $messages = [
+            'current_password.current_password' => 'La contraseña actual no es correcta.',
+            'password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
         ];
 
         if ($user->paciente) {
@@ -35,21 +43,21 @@ class PerfilController extends Controller
                 'direccion' => ['nullable', 'string', 'max:255'],
             ]);
         } elseif ($user->odontologo) {
-            $rules['matricula'] = ['required', 'string', 'max:255', Rule::unique('odontologos','matricula')->ignore($user->odontologo->id)];
+            $rules['matricula'] = ['required', 'string', 'max:255', Rule::unique('odontologos', 'matricula')->ignore($user->odontologo->id)];
             $rules = array_merge($rules, [
                 'disponibilidades' => ['required', 'array', 'min:1'],
                 'disponibilidades.*' => ['required', 'array:dia_semana,hora_inicio,hora_fin'],
-                'disponibilidades.*.dia_semana' => ['required', Rule::in(['lunes','martes','miercoles','jueves','viernes'])],
-                'disponibilidades.*.hora_inicio' =>['required','date_format:H:i'],
+                'disponibilidades.*.dia_semana' => ['required', Rule::in(['lunes', 'martes', 'miercoles', 'jueves', 'viernes'])],
+                'disponibilidades.*.hora_inicio' => ['required', 'date_format:H:i'],
                 'disponibilidades.*.hora_fin' => ['required', 'date_format:H:i', 'after:disponibilidades.*.hora_inicio'],
                 'vacaciones' => ['sometimes', 'array'],
                 'vacaciones.*' => ['required', 'array:fecha_desde,fecha_hasta'],
                 'vacaciones.*.fecha_desde' => ['nullable', 'date_format:Y-m-d', 'required_with:vacaciones.*.fecha_hasta'],
-                'vacaciones.*.fecha_hasta' => [ 'nullable', 'date_format:Y-m-d','required_with:vacaciones.*.fecha_desde','after_or_equal:vacaciones.*.fecha_desde']
+                'vacaciones.*.fecha_hasta' => ['nullable', 'date_format:Y-m-d', 'required_with:vacaciones.*.fecha_desde', 'after_or_equal:vacaciones.*.fecha_desde'],
             ]);
         }
-        
-        $data = $request->validate($rules);
+
+        $data = $request->validate($rules, $messages);
         $fotoAnterior = $user->foto;
         $nuevaFoto = null;
 
@@ -58,52 +66,56 @@ class PerfilController extends Controller
         }
         try {
 
-        DB::transaction(function () use ($user, $data, $nuevaFoto): void {
-            $user->name = $data['name'];
-            $user->apellido = $data['apellido'];
-            $user->email = $data['email'];
+            DB::transaction(function () use ($user, $data, $nuevaFoto): void {
+                $user->name = $data['name'];
+                $user->apellido = $data['apellido'];
+                $user->email = $data['email'];
 
-            if ($nuevaFoto) {
-                $user->foto = $nuevaFoto;
-            }
-
-            $user->save();
-
-            if ($user->paciente) {
-                $user->paciente->update([
-                    'obra_social' => $data['obra_social'] ?? null,
-                    'fecha_nacimiento' => $data['fecha_nacimiento'] ?? null,
-                    'direccion' => $data['direccion'] ?? null,
-                ]);
-            } elseif ($user->odontologo) {
-                $odontologo = $user->odontologo;
-                $odontologo->matricula = $data['matricula'];
-                $odontologo->save();
-
-                $odontologo->disponibilidades()->delete();
-
-                foreach ($data['disponibilidades'] as $disponibilidad) {
-                    $odontologo->disponibilidades()->create([
-                        'dia_semana' => $disponibilidad['dia_semana'],
-                        'hora_inicio' => $disponibilidad['hora_inicio'],
-                        'hora_fin' => $disponibilidad['hora_fin'],
-                    ]);
+                if (filled($data['password'] ?? null)) {
+                    $user->password = Hash::make($data['password']);
                 }
 
-                $odontologo->vacaciones()->delete();
+                if ($nuevaFoto) {
+                    $user->foto = $nuevaFoto;
+                }
 
-                foreach ($data['vacaciones'] ?? [] as $vacacion) {
-                    if (blank($vacacion['fecha_desde']) && blank($vacacion['fecha_hasta'])) {
-                        continue;
+                $user->save();
+
+                if ($user->paciente) {
+                    $user->paciente->update([
+                        'obra_social' => $data['obra_social'] ?? null,
+                        'fecha_nacimiento' => $data['fecha_nacimiento'] ?? null,
+                        'direccion' => $data['direccion'] ?? null,
+                    ]);
+                } elseif ($user->odontologo) {
+                    $odontologo = $user->odontologo;
+                    $odontologo->matricula = $data['matricula'];
+                    $odontologo->save();
+
+                    $odontologo->disponibilidades()->delete();
+
+                    foreach ($data['disponibilidades'] as $disponibilidad) {
+                        $odontologo->disponibilidades()->create([
+                            'dia_semana' => $disponibilidad['dia_semana'],
+                            'hora_inicio' => $disponibilidad['hora_inicio'],
+                            'hora_fin' => $disponibilidad['hora_fin'],
+                        ]);
                     }
 
-                    $odontologo->vacaciones()->create([
-                        'fecha_desde' => $vacacion['fecha_desde'],
-                        'fecha_hasta' => $vacacion['fecha_hasta'],
-                    ]);
+                    $odontologo->vacaciones()->delete();
+
+                    foreach ($data['vacaciones'] ?? [] as $vacacion) {
+                        if (blank($vacacion['fecha_desde']) && blank($vacacion['fecha_hasta'])) {
+                            continue;
+                        }
+
+                        $odontologo->vacaciones()->create([
+                            'fecha_desde' => $vacacion['fecha_desde'],
+                            'fecha_hasta' => $vacacion['fecha_hasta'],
+                        ]);
+                    }
                 }
-            }
-        });
+            });
         } catch (\Throwable $e) {
             if ($nuevaFoto) {
                 Storage::disk('public')->delete($nuevaFoto);
@@ -114,6 +126,7 @@ class PerfilController extends Controller
         if ($nuevaFoto && $fotoAnterior) {
             Storage::disk('public')->delete($fotoAnterior);
         }
+
         return redirect()
             ->route('perfil')
             ->with('success', 'Perfil actualizado correctamente.');

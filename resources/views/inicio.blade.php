@@ -64,11 +64,11 @@
 
                 <div class="col-md-5">
                     <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Mis turnos</h5>
-                            <p class="card-text">Consultá tus próximos turnos.</p>
-                            <a href="{{ route('mis_turnos') }}" class="btn btn-success">
-                                Ver mis turnos
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Reservar un turno</h5>
+                            <p class="card-text flex-grow-1">Solicitá tu próximo turno odontológico.</p>
+                            <a href="{{ route('reserva') }}" class="btn btn-primary">
+                                Agendar turno
                             </a>
                         </div>
                     </div>
@@ -76,11 +76,11 @@
 
                 <div class="col-md-5">
                     <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Reservar un turno</h5>
-                            <p class="card-text">Solicitá tu próximo turno odontológico.</p>
-                            <a href="{{ route('reserva') }}" class="btn btn-primary">
-                                Agendar turno
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Mis turnos</h5>
+                            <p class="card-text flex-grow-1">Consultá tus próximos turnos.</p>
+                            <a href="{{ route('mis_turnos') }}" class="btn btn-outline-primary">
+                                Ver mis turnos
                             </a>
                         </div>
                     </div>
@@ -90,11 +90,11 @@
 
                 <div class="col-md-5">
                     <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Mis turnos</h5>
-                            <p class="card-text">Consultá los turnos asignados.</p>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Mi agenda</h5>
+                            <p class="card-text flex-grow-1">Consultá los turnos asignados.</p>
                             <a href="{{ route('odontologo.agenda') }}" class="btn btn-primary">
-                                Ver mis turnos
+                                Ver mi agenda
                             </a>
                         </div>
                     </div>
@@ -102,9 +102,9 @@
 
                 <div class="col-md-5">
                     <div class="card h-100">
-                        <div class="card-body">
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">Mi perfil</h5>
-                            <p class="card-text">Consultá y modificá tus datos personales.</p>
+                            <p class="card-text flex-grow-1">Consultá y modificá tus datos personales.</p>
                             <a href="{{ route('perfil') }}" class="btn btn-outline-primary">
                                 Editar perfil
                             </a>

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Notifications;
+namespace App\Notificaciones;
 
 use Illuminate\Notifications\Notification;
 
-class TurnoCanceladoNotification extends Notification
+class TurnoCanceladoNotificacion extends Notification
 {
     public function __construct(
         private readonly string $nombreTurno,

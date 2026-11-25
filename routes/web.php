@@ -24,6 +24,8 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
 
 Route::middleware('auth')->prefix('notificaciones')->name('notificaciones.')->group(function () {
+    Route::get('/recientes', [NotificacionController::class, 'recientes'])
+        ->name('recientes');
     Route::get('/no-leidas', [NotificacionController::class, 'noLeidas'])
         ->name('no-leidas');
     Route::post('/leidas', [NotificacionController::class, 'marcarLeidas'])

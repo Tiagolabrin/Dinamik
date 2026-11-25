@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Consultorio;
 use App\Models\User;
 use App\Models\Odontologo;
-use App\Notifications\TurnoCanceladoNotification;
+use App\Notificaciones\TurnoCanceladoNotificacion;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -257,7 +257,8 @@ class ReservaController extends Controller
     public function misTurnos(): View
     {
         $usuario = User::findOrFail(Auth::id());
-        $query = Appointment::query();
+        $query = Appointment::query()
+            ->where('starts_at', '>=', $this->inicioVentanaListadoTurnos());
 
         if ($usuario->tipo_usuario === 'administrador') {
             // El administrador puede consultar y cancelar cualquier turno.
@@ -346,12 +347,12 @@ class ReservaController extends Controller
 
             Appointments::for($turno)->cancel();
 
-            $paciente->notify(new TurnoCanceladoNotification(
+            $paciente->notify(new TurnoCanceladoNotificacion(
                 $turno->name,
                 $fechaTurno,
                 $canceladoPor,
             ));
-            $odontologo->notify(new TurnoCanceladoNotification(
+            $odontologo->notify(new TurnoCanceladoNotificacion(
                 $turno->name,
                 $fechaTurno,
                 $canceladoPor,
@@ -383,6 +384,7 @@ class ReservaController extends Controller
 
         $appointments = Appointment::query()
             ->with('participants.participant')
+            ->where('starts_at', '>=', $this->inicioVentanaListadoTurnos())
             ->whereHas('participants', function ($query) use ($odontologo) {
                 $query->where('participant_type', $odontologo->getMorphClass())
                     ->where('participant_id', $odontologo->getKey())
@@ -392,6 +394,15 @@ class ReservaController extends Controller
             ->get();
 
         return view('odontologo.agenda', compact('appointments'));
+    }
+
+    private function inicioVentanaListadoTurnos(): string
+    {
+        return CarbonImmutable::now(config('app.timezone'))
+            ->subDays(3)
+            ->startOfDay()
+            ->utc()
+            ->toDateTimeString();
     }
 
     public function confirmacion(Appointment $appointment): View

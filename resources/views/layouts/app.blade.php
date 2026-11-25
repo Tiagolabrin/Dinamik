@@ -14,6 +14,46 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        :root {
+            --bs-primary: #28566a;
+            --bs-primary-rgb: 40, 86, 106;
+            --bs-link-color: #376e85;
+            --bs-link-color-rgb: 40, 86, 106;
+            --bs-link-hover-color: #579ab5;
+            --bs-link-hover-color-rgb: 32, 69, 84;
+        }
+
+        .btn-primary {
+            --bs-btn-bg: var(--bs-primary);
+            --bs-btn-border-color: var(--bs-primary);
+            --bs-btn-color: #fff;
+            --bs-btn-hover-bg: #f0f5f7;
+            --bs-btn-hover-color: var(--bs-primary);
+            --bs-btn-hover-border-color: var(--bs-primary);
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: #204554;
+            --bs-btn-active-border-color: #204554;
+            --bs-btn-disabled-bg: var(--bs-primary);
+            --bs-btn-disabled-border-color: var(--bs-primary);
+            --bs-btn-disabled-color: #fff;
+            --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+        }
+
+        .btn-outline-primary {
+            --bs-btn-bg: transparent;
+            --bs-btn-color: var(--bs-primary);
+            --bs-btn-border-color: var(--bs-primary);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-hover-bg: var(--bs-primary);
+            --bs-btn-hover-border-color: var(--bs-primary);
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: var(--bs-primary);
+            --bs-btn-active-border-color: var(--bs-primary);
+            --bs-btn-disabled-color: var(--bs-primary);
+            --bs-btn-disabled-border-color: var(--bs-primary);
+            --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+        }
+
         body {
             background-color: #f5f8fc;
             display: flex;
@@ -36,29 +76,29 @@
 
         .site-footer {
             background-color: #fff;
-            border-top: 3px solid #0d6efd;
+            border-top: 3px solid var(--bs-primary);
             width: 100%;
             flex-shrink: 0;
         }
 
         .site-footer h2 {
-            color: #17365d;
+            color: #28566a;
             font-size: 1.15rem;
             font-weight: 600;
         }
 
         .insurance-list li {
-            color: #334155;
+            color: #28566a;
             margin-bottom: 0.5rem;
         }
 
         .site-footer a {
-            color: #334155;
+            color: #579ab5;
             text-decoration: none;
         }
 
         .site-footer a:hover {
-            color: #0d6efd;
+            color: var(--bs-primary);
             text-decoration: underline;
         }
 
@@ -83,12 +123,62 @@
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
             transform: scale(0.95);
         }
+
+        .site-header {
+            position: relative;
+            z-index: 10;
+            background-color: var(--bs-primary);
+        }
+
+        .header-actions {
+            position: relative;
+        }
+
+        .notification-inbox-toggle {
+            display: inline-flex;
+            width: 2.75rem;
+            height: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        .notification-inbox-toggle img {
+            display: block;
+            width: 1.5rem;
+            height: 1.5rem;
+            object-fit: contain;
+        }
+
+        .notification-inbox {
+            position: absolute;
+            top: calc(100% + 0.75rem);
+            right: 0;
+            z-index: 20;
+            width: min(24rem, calc(100vw - 2rem));
+            max-height: min(70vh, 32rem);
+            overflow-y: auto;
+            color: #212529;
+            background: #fff;
+            border: 4px solid #dee2e6;
+            border-radius: 0.75rem;
+            box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 18%);
+        }
+
+        .notification-item + .notification-item {
+            border-top: 1px solid #dee2e6;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f6f8;
+        }
     </style>
 </head>
 
 <body>
 
-<header class="text-white py-1 px-4" style="background-color: #28566A;">
+<header class="site-header text-white py-1 px-4">
         <div class="d-flex justify-content-between align-items-center">
             <a href="{{ route('inicio') }}">
                 <img src="{{ asset('images/blanco.consul.png') }}"
@@ -96,9 +186,40 @@
                     class="logo">
             </a>
 
-            <h1 class="mb-0 text-end fs-5">
-                Consultorio Odontológico
-            </h1>
+            <div class="header-actions d-flex flex-wrap justify-content-end align-items-center gap-3">
+                <h1 class="mb-0 text-end fs-5">
+                    Consultorio Odontológico
+                </h1>
+
+                @auth
+                    @if (in_array(auth()->user()->tipo_usuario, ['paciente', 'odontologo'], true))
+                        <button
+                            type="button"
+                            id="notification-inbox-toggle"
+                            class="btn btn-outline-light btn-sm notification-inbox-toggle"
+                            aria-label="Abrir notificaciones"
+                            aria-expanded="false"
+                            aria-controls="notification-inbox-panel"
+                        >
+                            <img src="{{ asset('images/notificacion.png') }}" alt="">
+                        </button>
+
+                        <section
+                            id="notification-inbox-panel"
+                            class="notification-inbox p-3"
+                            aria-label="Últimas notificaciones"
+                            hidden
+                        >
+                            <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                <h2 class="h6 mb-0">Últimas notificaciones</h2>
+                                <span id="notification-inbox-count" class="badge text-bg-secondary"></span>
+                            </div>
+                            <p id="notification-inbox-status" class="small text-body-secondary mb-2" role="status" aria-live="polite"></p>
+                            <div id="notification-inbox-list"></div>
+                        </section>
+                    @endif
+                @endauth
+            </div>
         </div>
     </header>
 
@@ -107,11 +228,14 @@
     </div>
 
     @auth
-        <div
-            data-unread-notifications-url="{{ route('notificaciones.no-leidas') }}"
-            data-read-notifications-url="{{ route('notificaciones.leidas') }}"
-            hidden
-        ></div>
+        @if (in_array(auth()->user()->tipo_usuario, ['paciente', 'odontologo'], true))
+            <div
+                data-unread-notifications-url="{{ route('notificaciones.no-leidas') }}"
+                data-read-notifications-url="{{ route('notificaciones.leidas') }}"
+                data-recent-notifications-url="{{ route('notificaciones.recientes') }}"
+                hidden
+            ></div>
+        @endif
     @endauth
 
     <footer class="site-footer py-4">
