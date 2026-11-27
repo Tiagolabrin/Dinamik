@@ -18,7 +18,7 @@ tareas.
 - Registro de pacientes e inicio y cierre de sesión.
 - Edición del perfil propio; el paciente puede actualizar sus datos personales
   y el odontólogo también puede gestionar su matrícula, disponibilidades y
-  períodos de vacaciones. Todos los perfiles pueden cambiar su contraseña
+  períodos de vacaciones. Pacientes y odontologos pueden cambiar su contraseña
   verificando la actual e ingresando y confirmando la nueva.
 - Consulta de odontólogos y selección de fecha y horarios disponibles.
 - Reserva de turnos con observaciones opcionales y pantalla de confirmación con
@@ -26,8 +26,8 @@ tareas.
 - Consulta de turnos propios por pacientes y consulta de agenda por
   odontólogos. Ambos listados muestran turnos desde las 00:00 de tres días
   antes de la fecha actual en adelante.
-- Cancelación de turnos futuros por el paciente titular, el odontólogo
-  responsable o el administrador. Al reservar o cancelar un turno, se guarda
+- Cancelación de turnos futuros por el paciente titular o el odontólogo
+  responsabler. Al reservar o cancelar un turno, se guarda
   una notificación para el paciente y el odontólogo; Notific8 la muestra cuando
   cada uno vuelve a usar la aplicación.
 - Administración de odontólogos y pacientes: alta, consulta, edición y baja,
@@ -58,9 +58,8 @@ perfiles, disponibilidades, vacaciones y participantes de los turnos.
 
 - **Administrador:** puede crear, consultar, editar y eliminar odontólogos;
   consultar, editar y eliminar pacientes; y cargar o actualizar los datos del
-  consultorio. También puede consultar y cancelar turnos. La aplicación no
-  ofrece actualmente funciones para editar o eliminar turnos: para un turno,
-  la acción disponible es cancelarlo.
+  consultorio. La aplicación no ofrece actualmente funciones para editar
+  o eliminar turnos: para un turno, la acción disponible es cancelarlo.
 - **Odontólogo:** puede consultar su agenda, cancelar sus propios turnos
   futuros y editar su perfil, matrícula, disponibilidades y vacaciones.
 - **Paciente:** puede registrarse, editar su perfil, consultar horarios,
