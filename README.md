@@ -18,16 +18,18 @@ tareas.
 - Registro de pacientes e inicio y cierre de sesión.
 - Edición del perfil propio; el paciente puede actualizar sus datos personales
   y el odontólogo también puede gestionar su matrícula, disponibilidades y
-  períodos de vacaciones.
+  períodos de vacaciones. Todos los perfiles pueden cambiar su contraseña
+  verificando la actual e ingresando y confirmando la nueva.
 - Consulta de odontólogos y selección de fecha y horarios disponibles.
 - Reserva de turnos con observaciones opcionales y pantalla de confirmación con
   los datos del consultorio.
 - Consulta de turnos propios por pacientes y consulta de agenda por
-  odontólogos.
+  odontólogos. Ambos listados muestran turnos desde las 00:00 de tres días
+  antes de la fecha actual en adelante.
 - Cancelación de turnos futuros por el paciente titular, el odontólogo
-  responsable o el administrador. La cancelación guarda un aviso para el
-  paciente y el odontólogo; Notific8 lo muestra cuando cada uno vuelve a usar
-  la aplicación.
+  responsable o el administrador. Al reservar o cancelar un turno, se guarda
+  una notificación para el paciente y el odontólogo; Notific8 la muestra cuando
+  cada uno vuelve a usar la aplicación.
 - Administración de odontólogos y pacientes: alta, consulta, edición y baja,
   con restricciones para impedir eliminaciones cuando existen turnos futuros.
 - Alta y actualización de los datos de contacto del consultorio.
@@ -79,12 +81,13 @@ asíncronas y actualizar información sin recargar la página:
   disponibilidad semanal, las vacaciones y los turnos existentes. JavaScript
   actualiza las opciones de horario y comunica si no hay disponibilidad o si
   ocurre un error.
-- **Notificaciones de cancelación:** al cargar una página autenticada,
+- **Notificaciones de turnos:** al cargar una página autenticada,
   `resources/js/app.js` consulta `GET /notificaciones/no-leidas`. Laravel
-  devuelve las notificaciones pendientes del usuario y Notific8 las presenta
-  como avisos visuales. Después, JavaScript envía sus identificadores a
-  `POST /notificaciones/leidas`, incluyendo el token CSRF, para marcarlas como
-  leídas. La consulta devuelve hasta 50 avisos pendientes por vez.
+  devuelve las notificaciones pendientes de reservas y cancelaciones, y
+  Notific8 las presenta como avisos visuales. Después, JavaScript envía sus
+  identificadores a `POST /notificaciones/leidas`, incluyendo el token CSRF,
+  para marcarlas como leídas. La consulta devuelve hasta 50 avisos pendientes
+  por vez.
 
 Notific8 se encarga únicamente de mostrar los avisos; las peticiones AJAX las
 realiza `fetch()` y Laravel guarda y recupera las notificaciones. Estas se
@@ -103,10 +106,11 @@ vacaciones del odontólogo antes de guardar la reserva.
 
 Para avisos visuales se utiliza
 [`notific8`](https://github.com/pynklynn/notific8), instalada como dependencia
-JavaScript en `package.json`. Los avisos de cancelación se guardan mediante las
-notificaciones de base de datos de Laravel y se muestran con Notific8 cuando el
-destinatario entra a la aplicación. Además, si la sesión está autenticada permite consultar una
-bandeja con las últimas 15 notificaciones. Esta implementación no envía correos.
+JavaScript en `package.json`. Los avisos de reserva y cancelación se guardan
+mediante las notificaciones de base de datos de Laravel y se muestran con
+Notific8 cuando el destinatario entra a la aplicación. Además, si la sesión
+está autenticada permite consultar una bandeja con las últimas 15
+notificaciones. Esta implementación no envía correos.
 
 Después de instalar las dependencias del proyecto, ejecutá `npm run build` para
 generar los recursos JavaScript y CSS usados por Vite.
@@ -129,7 +133,14 @@ DEMO_ODONTOLOGO_PASSWORD=otra-clave-segura
 ```
 
 Las cuentas de demostración son `paciente.demo@example.test` y
-`odontologa.demo@example.test`. El seeder no reemplaza los datos existentes del
-consultorio ni las contraseñas de cuentas que ya creó. Si necesitás reconstruir
-una base local desde cero, podés usar `php artisan migrate:fresh --seed`; ese
-comando elimina primero todas las tablas y sus datos.
+`odontologa.demo@example.test`. La carga inicial del administrador y de las
+cuentas de demonstración conserva las contraseñas y perfiles de cuentas que ya existen.
+Al repetir la carga, las disponibilidades del odontólogo demo se establecen
+de lunes a viernes de 09:00 a 12:00 y se actualiza su período de vacaciones de
+demostración. El consultorio existente no se reemplaza. Los datos demo no se
+cargan en producción.
+
+`php artisan migrate --seed` aplica las migraciones pendientes y carga los
+seeders; no elimina las tablas ni los datos existentes. Si necesitamos reconstruir
+una base local desde cero, usamos `php artisan migrate:fresh --seed`, pero
+ese comando elimina primero todas las tablas y sus datos.

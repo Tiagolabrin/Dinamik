@@ -19,8 +19,8 @@ class DatabaseSeederTest extends TestCase
             'app.admin_initial.name' => 'Administradora de prueba',
             'app.admin_initial.email' => 'admin@example.test',
             'app.admin_initial.password' => 'clave-admin-segura',
-            'app.demo_accounts.patient_password' => 'clave-paciente-segura',
-            'app.demo_accounts.dentist_password' => 'clave-odontologa-segura',
+            'app.demo_accounts.paciente_password' => 'clave-paciente-segura',
+            'app.demo_accounts.odontologo_password' => 'clave-odontologa-segura',
             'appointments.timezone' => 'America/Argentina/Buenos_Aires',
         ]);
         $this->travelTo('2026-11-24 08:00:00');

@@ -6,6 +6,7 @@ use App\Models\Consultorio;
 use App\Models\User;
 use App\Models\Odontologo;
 use App\Notificaciones\TurnoCanceladoNotificacion;
+use App\Notificaciones\TurnoReservadoNotificacion;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -104,6 +105,9 @@ class ReservaController extends Controller
 
         $inicioUtc = $inicio->setTimezone('UTC');
         $finUtc = $fin->setTimezone('UTC');
+        $fechaTurno = $inicio->format('d/m/Y H:i');
+        $nombrePaciente = trim($usuario->name.' '.$usuario->apellido);
+        $nombreOdontologo = trim($odontologo->user->name.' '.$odontologo->user->apellido);
 
         $ocupado = Appointment::query()
             ->whereHas('participants', function ($query) use ($odontologo) {
@@ -127,7 +131,10 @@ class ReservaController extends Controller
             $usuario,
             $inicio,
             $timezone,
-            $duracion
+            $duracion,
+            $fechaTurno,
+            $nombrePaciente,
+            $nombreOdontologo,
         ) {
             $appointment = Appointments::schedule(
                 'Consulta con ' . $odontologo->user->name . ' ' . $odontologo->user->apellido
@@ -156,6 +163,19 @@ class ReservaController extends Controller
                     'description' => $data['observaciones'],
                 ]);
             }
+
+            $usuario->notify(new TurnoReservadoNotificacion(
+                $appointment->name,
+                $fechaTurno,
+                $nombrePaciente,
+                $nombreOdontologo,
+            ));
+            $odontologo->user->notify(new TurnoReservadoNotificacion(
+                $appointment->name,
+                $fechaTurno,
+                $nombrePaciente,
+                $nombreOdontologo,
+            ));
 
             return $appointment;
         });
